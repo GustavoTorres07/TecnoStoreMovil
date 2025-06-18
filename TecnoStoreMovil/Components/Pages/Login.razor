@@ -1,0 +1,56 @@
+﻿@page "/"
+@using TecnoStoreMovil.Models
+@inject TecnoStoreMovil.Services.UsuarioService UsuarioService
+@inject NavigationManager NavigationManager
+
+<h3 class="text-center mt-4">Iniciar Sesión</h3>
+
+<div class="container mt-4" style="max-width: 400px;">
+    <div class="card shadow-sm p-4">
+        <EditForm Model="@loginData" OnValidSubmit="IniciarSesion">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="mb-3">
+                <label>Email</label>
+                <InputText class="form-control" @bind-Value="loginData.Email" />
+            </div>
+
+            <div class="mb-3">
+                <label>Clave</label>
+                <InputText class="form-control" type="password" @bind-Value="loginData.Clave" />
+            </div>
+
+            @if (!string.IsNullOrEmpty(errorMensaje))
+            {
+                <div class="alert alert-danger">@errorMensaje</div>
+            }
+
+            <button class="btn btn-primary w-100" type="submit">Ingresar</button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private LoginData loginData = new();
+    private string errorMensaje = string.Empty;
+
+    private void IniciarSesion()
+    {
+        var usuario = UsuarioService.ValidarLogin(loginData.Email, loginData.Clave);
+        if (usuario != null)
+        {
+            NavigationManager.NavigateTo("/AdminDashboard");
+        }
+        else
+        {
+            errorMensaje = "Credenciales inválidas o usuario inactivo.";
+        }
+    }
+
+    public class LoginData
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Clave { get; set; } = string.Empty;
+    }
+}

@@ -1,0 +1,41 @@
+﻿@page "/AdminDashboard"
+@using TecnoStoreMovil.Models
+@inject NavigationManager NavigationManager
+@inject TecnoStoreMovil.Services.UsuarioService UsuarioService
+
+<h3 class="text-center mt-4">
+    <i class="bi bi-speedometer2"></i> Panel de Administración
+</h3>
+
+@if (usuario != null)
+{
+    <div class="alert alert-success text-center mt-4">
+        Bienvenido, <strong>@usuario.Nombre @usuario.Apellido</strong> 👋
+    </div>
+}
+
+<div class="container mt-4">
+    <div class="row g-4 justify-content-center">
+        <div class="col-10">
+            <div class="card text-white bg-primary shadow h-100"
+                 @onclick="@(() => NavigationManager.NavigateTo("/usuarios"))"
+                 style="cursor:pointer;">
+                <div class="card-body text-center">
+                    <i class="bi bi-people-fill" style="font-size: 2rem;"></i>
+                    <h5 class="mt-2">Gestión de Usuarios</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private Usuario? usuario;
+
+    protected override void OnInitialized()
+    {
+        // Suponemos que el último usuario validado queda cargado en el servicio
+        // (podés mejorarlo con un AppState o sistema de sesión)
+        usuario = UsuarioService.GetUsuarios().FirstOrDefault(u => u.Activo && u.Rol == RolUsuario.Administrador);
+    }
+}
