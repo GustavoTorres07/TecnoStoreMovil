@@ -1,0 +1,121 @@
+﻿@page "/usuarios"
+@using TecnoStoreMovil.Models
+@inject UsuarioService UsuarioService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+
+<div class="container my-3">
+    <h3 class="mb-4">Gestión de Usuarios</h3>
+
+    <button class="btn btn-success mb-3" @onclick="NuevoUsuario">
+        <i class="bi bi-plus-circle me-1"></i> Agregar Usuario
+    </button>
+
+    <!-- Tabla para escritorio -->
+    <div class="table-responsive d-none d-md-block">
+        <table class="table table-striped table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Foto</th>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                    <th>Activo</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var usuario in usuarios)
+                {
+                    <tr>
+                        <td>
+                            <img src="@usuario.FotoUsuario" class="img-fluid rounded-circle" style="max-width:50px; max-height:50px;" />
+                        </td>
+                        <td>@usuario.Nombre @usuario.Apellido</td>
+                        <td>@usuario.Email</td>
+                        <td>@usuario.Rol</td>
+                        <td>@(usuario.Activo ? "Sí" : "No")</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary me-2 px-3"
+                                    title="Editar"
+                                    @onclick="@(() => EditarUsuario(usuario.Id))">
+                                <i class="bi bi-pencil-square me-1"></i> Editar
+                            </button>
+
+                            <button class="btn btn-sm btn-primary px-3"
+                                    title="Eliminar"
+                                    @onclick="@(() => ConfirmarEliminarUsuario(usuario.Id))">
+                                <i class="bi bi-trash me-1"></i> Eliminar
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Cards para móviles -->
+    <div class="d-block d-md-none">
+        @foreach (var usuario in usuarios)
+        {
+            <div class="card mb-3 shadow-sm">
+                <div class="row g-0 align-items-center">
+                    <div class="col-3 text-center">
+                        <img src="@usuario.FotoUsuario" class="img-fluid rounded-circle m-2" style="max-width:70px; max-height:70px;" />
+                    </div>
+                    <div class="col-9">
+                        <div class="card-body p-2">
+                            <h5 class="card-title mb-1">@usuario.Nombre @usuario.Apellido</h5>
+                            <p class="card-text mb-1"><small class="text-muted">@usuario.Email</small></p>
+                            <p class="card-text mb-1"><strong>Rol:</strong> @usuario.Rol</p>
+                            <p class="card-text mb-1"><strong>Activo:</strong> @(usuario.Activo ? "Sí" : "No")</p>
+                            <div>
+                                <button class="btn btn-sm btn-primary me-2 px-3"
+                                        title="Editar"
+                                        @onclick="@(() => EditarUsuario(usuario.Id))">
+                                    <i class="bi bi-pencil-square me-1"></i> Editar
+                                </button>
+
+                                <button class="btn btn-sm btn-primary px-3"
+                                        title="Eliminar"
+                                        @onclick="@(() => ConfirmarEliminarUsuario(usuario.Id))">
+                                    <i class="bi bi-trash me-1"></i> Eliminar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<Usuario> usuarios = new();
+
+    protected override void OnInitialized()
+    {
+        usuarios = UsuarioService.GetUsuarios();
+    }
+
+    private void NuevoUsuario()
+    {
+        NavigationManager.NavigateTo("/usuario-form");
+    }
+
+    private void EditarUsuario(int id)
+    {
+        NavigationManager.NavigateTo($"/usuario-form/{id}");
+    }
+
+    private async Task ConfirmarEliminarUsuario(int id)
+    {
+        bool confirmado = await JS.InvokeAsync<bool>("confirm", "¿Estás seguro de que deseas eliminar este usuario?");
+        if (confirmado)
+        {
+            UsuarioService.DeleteUsuario(id);
+            usuarios = UsuarioService.GetUsuarios();
+            StateHasChanged();
+        }
+    }
+}

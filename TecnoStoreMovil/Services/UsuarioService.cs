@@ -24,7 +24,7 @@ namespace TecnoStoreMovil.Services
                     Celular = "+54 9 2954-216751",
                     Clave = "HalaMadrid7",
                     FechaRegistro = DateTime.Now,
-                    FotoUsuario = "img/usuario_default.jpg",
+                    FotoUsuario = "images/usuario_default.png",
                     Rol = RolUsuario.Administrador,
                     Activo = true
 
@@ -37,7 +37,7 @@ namespace TecnoStoreMovil.Services
                     Celular = "+54 9 2954-159634",
                     Clave = "anaperez1",
                     FechaRegistro = DateTime.Now,
-                    FotoUsuario = "img/usuario_default.jpg",
+                    FotoUsuario = "images/usuario_default.png",
                     Rol = RolUsuario.Cliente,   
                     Activo = true
                 },
@@ -49,7 +49,7 @@ namespace TecnoStoreMovil.Services
                     Celular = "+54 9 2954-202541",
                     Clave = "anaperez1", 
                     FechaRegistro = DateTime.Now,
-                    FotoUsuario = "img/usuario_default.jpg",
+                    FotoUsuario = "images/usuario_default.png",
                     Rol = RolUsuario.Cliente,   
                     Activo = false
                 }
