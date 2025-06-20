@@ -1,0 +1,153 @@
+﻿@page "/ProductosCliente"
+@inject ProductoService ProductoService
+@inject CarritoService CarritoService
+@inject SesionService SesionService
+
+<h3 class="mt-4 text-center">🛒 Productos Disponibles</h3>
+
+<!-- Filtro por categoría -->
+<div class="container mt-3">
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-6">
+            <label class="form-label fw-bold">Seleccioná una categoría:</label>
+            <select class="form-select" @bind="CategoriaSeleccionadaId" @bind:event="onchange">
+                <option value="0">Todas las categorías</option>
+                @foreach (var categoria in categorias)
+                {
+                    <option value="@categoria.Id">@categoria.Nombre</option>
+                }
+            </select>
+        </div>
+    </div>
+</div>
+
+@if (productosFiltrados.Count == 0)
+{
+    <div class="alert alert-info text-center mt-4">
+        No hay productos disponibles por el momento.
+    </div>
+}
+else
+{
+    <div class="container mt-4">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+            @foreach (var producto in productosFiltrados)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <img src="@producto.ImagenProducto" class="card-img-top" alt="@producto.Nombre" style="object-fit: cover; height: 180px;" />
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@producto.Nombre</h5>
+                            <p class="card-text text-muted">@producto.Descripcion</p>
+                            <p class="fw-bold">💵 Precio: $@producto.Precio</p>
+                            <p class="text-secondary mb-2">🛑 Últimos disponibles: <strong>@producto.Cantidad</strong></p>
+
+                            <div class="input-group mb-3">
+                                <button class="btn btn-outline-secondary" type="button"
+                                        @onclick="() => DisminuirCantidad(producto.Id)">
+                                    <i class="bi bi-dash"></i>
+                                </button>
+
+                                <input type="number" class="form-control text-center" min="1" max="@producto.Cantidad"
+                                       @bind="cantidades[producto.Id]" />
+
+                                <button class="btn btn-outline-secondary" type="button"
+                                        @onclick="() => AumentarCantidad(producto.Id, producto.Cantidad)">
+                                    <i class="bi bi-plus"></i>
+                                </button>
+                            </div>
+
+                            <button class="btn btn-success mt-auto w-100"
+                                    @onclick="() => AgregarAlCarrito(producto)">
+                                <i class="bi bi-cart-plus me-2"></i>Agregar al Carrito
+                            </button>
+
+                            <NavLink class="btn btn-outline-primary mt-2 w-100" href="@($"/ProductoDetalle/{producto.Id}")">
+                                <i class="bi bi-eye me-2"></i>Ver Detalles
+                            </NavLink>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private List<Producto> productos = new();
+    private List<Producto> productosFiltrados = new();
+    private List<Categoria> categorias = new();
+    private Dictionary<int, int> cantidades = new();
+
+    private int categoriaSeleccionadaId;
+
+    private int CategoriaSeleccionadaId
+    {
+        get => categoriaSeleccionadaId;
+        set
+        {
+            if (categoriaSeleccionadaId != value)
+            {
+                categoriaSeleccionadaId = value;
+                FiltrarProductos();
+            }
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        productos = ProductoService.GetProductos().Where(p => p.Stock && p.Cantidad > 0).ToList();
+        categorias = ProductoService.GetCategorias();
+
+        // Iniciar filtro en todas las categorías
+        categoriaSeleccionadaId = 0;
+        FiltrarProductos();
+
+        // Inicializar cantidades con 1 para cada producto filtrado
+        foreach (var p in productosFiltrados)
+            cantidades[p.Id] = 1;
+    }
+
+    private void FiltrarProductos()
+    {
+        if (categoriaSeleccionadaId == 0)
+            productosFiltrados = productos.ToList();
+        else
+            productosFiltrados = productos.Where(p => p.CategoriaId == categoriaSeleccionadaId).ToList();
+
+        // Actualizar cantidades para productos filtrados
+        var nuevosIds = productosFiltrados.Select(p => p.Id).ToHashSet();
+
+        // Agregar nuevos productos con cantidad 1 si no existen
+        foreach (var id in nuevosIds)
+            if (!cantidades.ContainsKey(id))
+                cantidades[id] = 1;
+
+        // Opcional: eliminar productos no filtrados de cantidades para ahorrar memoria
+        var keysToRemove = cantidades.Keys.Except(nuevosIds).ToList();
+        foreach (var k in keysToRemove)
+            cantidades.Remove(k);
+
+        StateHasChanged();
+    }
+
+    private void AumentarCantidad(int productoId, int max)
+    {
+        if (cantidades[productoId] < max)
+            cantidades[productoId]++;
+    }
+
+    private void DisminuirCantidad(int productoId)
+    {
+        if (cantidades[productoId] > 1)
+            cantidades[productoId]--;
+    }
+
+    private void AgregarAlCarrito(Producto producto)
+    {
+        var cantidad = cantidades.ContainsKey(producto.Id) ? cantidades[producto.Id] : 1;
+
+        if (cantidad <= producto.Cantidad && cantidad > 0)
+            CarritoService.AgregarItem(producto, cantidad);
+    }
+}

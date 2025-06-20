@@ -36,17 +36,25 @@
                         <td>@usuario.Rol</td>
                         <td>@(usuario.Activo ? "Sí" : "No")</td>
                         <td>
-                            <button class="btn btn-sm btn-primary me-2 px-3"
-                                    title="Editar"
-                                    @onclick="@(() => EditarUsuario(usuario.Id))">
-                                <i class="bi bi-pencil-square me-1"></i> Editar
-                            </button>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-primary px-3"
+                                        title="Editar"
+                                        @onclick="@(() => EditarUsuario(usuario.Id))">
+                                    <i class="bi bi-pencil-square me-1"></i> Editar
+                                </button>
 
-                            <button class="btn btn-sm btn-primary px-3"
-                                    title="Eliminar"
-                                    @onclick="@(() => ConfirmarEliminarUsuario(usuario.Id))">
-                                <i class="bi bi-trash me-1"></i> Eliminar
-                            </button>
+                                <button class="btn btn-sm btn-info px-3"
+                                        title="Más info"
+                                        @onclick="@(() => VerDetalleUsuario(usuario.Id))">
+                                    <i class="bi bi-info-circle me-1"></i> Más info
+                                </button>
+
+                                <button class="btn btn-sm btn-danger px-3"
+                                        title="Eliminar"
+                                        @onclick="@(() => ConfirmarEliminarUsuario(usuario.Id))">
+                                    <i class="bi bi-trash me-1"></i> Eliminar
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 }
@@ -58,7 +66,15 @@
     <div class="d-block d-md-none">
         @foreach (var usuario in usuarios)
         {
-            <div class="card mb-3 shadow-sm">
+            <div class="card mb-3 shadow-sm position-relative">
+                <!-- posición relativa para el contenedor -->
+                <button class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2"
+                        style="z-index: 10;"
+                        title="Eliminar"
+                        @onclick="@(() => ConfirmarEliminarUsuario(usuario.Id))">
+                    <i class="bi bi-trash"></i>
+                </button>
+
                 <div class="row g-0 align-items-center">
                     <div class="col-3 text-center">
                         <img src="@usuario.FotoUsuario" class="img-fluid rounded-circle m-2" style="max-width:70px; max-height:70px;" />
@@ -69,17 +85,17 @@
                             <p class="card-text mb-1"><small class="text-muted">@usuario.Email</small></p>
                             <p class="card-text mb-1"><strong>Rol:</strong> @usuario.Rol</p>
                             <p class="card-text mb-1"><strong>Activo:</strong> @(usuario.Activo ? "Sí" : "No")</p>
-                            <div>
-                                <button class="btn btn-sm btn-primary me-2 px-3"
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button class="btn btn-sm btn-primary px-3"
                                         title="Editar"
                                         @onclick="@(() => EditarUsuario(usuario.Id))">
                                     <i class="bi bi-pencil-square me-1"></i> Editar
                                 </button>
 
-                                <button class="btn btn-sm btn-primary px-3"
-                                        title="Eliminar"
-                                        @onclick="@(() => ConfirmarEliminarUsuario(usuario.Id))">
-                                    <i class="bi bi-trash me-1"></i> Eliminar
+                                <button class="btn btn-sm btn-info px-3"
+                                        title="Más info"
+                                        @onclick="@(() => VerDetalleUsuario(usuario.Id))">
+                                    <i class="bi bi-info-circle me-1"></i> Más info
                                 </button>
                             </div>
                         </div>
@@ -106,6 +122,11 @@
     private void EditarUsuario(int id)
     {
         NavigationManager.NavigateTo($"/usuario-form/{id}");
+    }
+
+    private void VerDetalleUsuario(int id)
+    {
+        NavigationManager.NavigateTo($"/usuario-detalle/{id}");
     }
 
     private async Task ConfirmarEliminarUsuario(int id)

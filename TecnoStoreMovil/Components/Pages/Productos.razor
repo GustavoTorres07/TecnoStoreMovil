@@ -1,0 +1,135 @@
+﻿@page "/Productos"
+@inject ProductoService ProductoService
+@inject NavigationManager NavigationManager
+@inject SesionService SesionService
+@inject IJSRuntime JSRuntime
+
+
+@if (!SesionService.EsAdministrador)
+{
+    <h5 class="text-center text-danger mt-5">⛔ Acceso no autorizado</h5>
+    return;
+}
+
+<h3 class="mt-4 text-center">📋 Gestión de Productos</h3>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-end mb-3">
+        <button class="btn btn-success" @onclick="@NuevoProducto">
+            <i class="bi bi-plus-circle me-1"></i> Nuevo Producto
+        </button>
+    </div>
+</div>
+
+<!-- Tabla para pantallas grandes -->
+<div class="d-none d-md-block">
+    <table class="table table-bordered table-striped align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>Imagen</th>
+                <th>Nombre</th>
+                <th>Precio</th>
+                <th>Cantidad</th>
+                <th>Categoría</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in productos)
+            {
+                <tr>
+                    <td><img src="@p.ImagenProducto" style="height: 50px; object-fit: cover;" /></td>
+                    <td>@p.Nombre</td>
+                    <td>$@p.Precio</td>
+                    <td>@p.Cantidad</td>
+                    <td>@p.Categoria?.Nombre</td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-info px-3" title="Más info" @onclick="() => VerDetalleProducto(p.Id)">
+                                <i class="bi bi-info-circle me-1"></i> Más info
+                            </button>
+                            <button class="btn btn-sm btn-primary px-3" @onclick="() => EditarProducto(p.Id)">
+                                <i class="bi bi-pencil-square me-1"></i> Editar
+                            </button>
+                            <button class="btn btn-sm btn-primary" title="Eliminar" @onclick="async () => await EliminarProducto(p.Id)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Vista tipo tarjeta para pantallas chicas -->
+<div class="d-md-none">
+    @foreach (var p in productos)
+    {
+        <div class="card mb-3 shadow-sm position-relative">
+            <!-- Botón eliminar arriba a la derecha -->
+            <button class="btn btn-sm btn-primary position-absolute top-0 end-0 m-2 p-1"
+                    style="width: 32px; height: 32px;"
+                    title="Eliminar"
+                    @onclick="async () => await EliminarProducto(p.Id)">
+                <i class="bi bi-trash"></i>
+            </button>
+
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <img src="@p.ImagenProducto" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;" class="me-3" />
+                    <div>
+                        <h5 class="card-title mb-1">@p.Nombre</h5>
+                        <small class="text-muted">@p.Categoria?.Nombre</small>
+                    </div>
+                </div>
+                <p class="mb-1"><strong>Precio:</strong> $@p.Precio</p>
+                <p class="mb-1"><strong>Cantidad:</strong> @p.Cantidad</p>
+                <div class="d-flex justify-content-end gap-2 mt-3">
+                    <button class="btn btn-sm btn-info px-3" title="Más info" @onclick="() => VerDetalleProducto(p.Id)">
+                        <i class="bi bi-info-circle me-1"></i> Más info
+                    </button>
+                    <button class="btn btn-sm btn-primary px-3" @onclick="() => EditarProducto(p.Id)">
+                        <i class="bi bi-pencil-square me-1"></i> Editar
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+
+
+@code {
+    private List<Producto> productos = new();
+
+    protected override void OnInitialized()
+    {
+        productos = ProductoService.GetProductos();
+    }
+
+    private void NuevoProducto()
+    {
+        NavigationManager.NavigateTo("/ProductoForm");
+    }
+
+    private void EditarProducto(int id)
+    {
+        NavigationManager.NavigateTo($"/ProductoForm/{id}");
+    }
+
+    private async Task EliminarProducto(int id)
+    {
+        bool confirmado = await JSRuntime.InvokeAsync<bool>("confirm", "¿Estás seguro que deseas eliminar este producto?");
+        if (confirmado)
+        {
+            ProductoService.DeleteProducto(id);
+            productos = ProductoService.GetProductos();
+        }
+    }
+
+    private void VerDetalleProducto(int id)
+    {
+        NavigationManager.NavigateTo($"/ProductoDetalle/{id}");
+    }
+}

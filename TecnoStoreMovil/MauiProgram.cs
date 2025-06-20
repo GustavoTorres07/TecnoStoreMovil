@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using TecnoStoreMovil.Services;
 
 namespace TecnoStoreMovil
 {
@@ -15,7 +16,13 @@ namespace TecnoStoreMovil
                 });
 
             builder.Services.AddMauiBlazorWebView();
-            builder.Services.AddSingleton<Services.UsuarioService>();
+            builder.Services.AddSingleton<UsuarioService>();
+            builder.Services.AddSingleton<SesionService>();
+            builder.Services.AddSingleton<ProductoService>();
+            builder.Services.AddSingleton<CarritoService>();
+            builder.Services.AddSingleton<CategoriaService>();
+
+
 
 
 #if DEBUG

@@ -4,6 +4,9 @@
 @using TecnoStoreMovil.Models
 @inject TecnoStoreMovil.Services.UsuarioService UsuarioService
 @inject NavigationManager NavigationManager
+@inject SesionService SesionService
+@using Microsoft.AspNetCore.Components.Forms
+
 
 <h3 class="text-center mt-4">Iniciar Sesión</h3>
 
@@ -37,18 +40,24 @@
     private LoginData loginData = new();
     private string errorMensaje = string.Empty;
 
-    private void IniciarSesion()
+private void IniciarSesion()
+{
+    var usuario = UsuarioService.ValidarLogin(loginData.Email, loginData.Clave);
+    if (usuario != null)
     {
-        var usuario = UsuarioService.ValidarLogin(loginData.Email, loginData.Clave);
-        if (usuario != null)
-        {
+        SesionService.UsuarioActual = usuario;
+
+        // Redirigir según el rol
+        if (usuario.Rol == RolUsuario.Administrador)
             NavigationManager.NavigateTo("/AdminDashboard");
-        }
         else
-        {
-            errorMensaje = "Credenciales inválidas o usuario inactivo.";
-        }
+            NavigationManager.NavigateTo("/ClienteDashboard");
     }
+    else
+    {
+        errorMensaje = "Credenciales inválidas o usuario inactivo.";
+    }
+}
 
     public class LoginData
     {

@@ -1,0 +1,46 @@
+﻿@page "/usuario-detalle/{Id:int}"
+@inject UsuarioService UsuarioService
+@inject NavigationManager NavigationManager
+
+<h3 class="mt-4 text-center">Detalle del Usuario</h3>
+
+@if (usuario == null)
+{
+    <p class="text-center text-danger">Usuario no encontrado.</p>
+}
+else
+{
+    <div class="card mx-auto" style="max-width: 600px;">
+        <div class="card-body">
+            <div class="text-center mb-3">
+                <img src="@usuario.FotoUsuario" class="rounded-circle" style="max-width: 120px; max-height: 120px;" />
+            </div>
+            <h4>@usuario.Nombre @usuario.Apellido</h4>
+            <p><strong>Email:</strong> @usuario.Email</p>
+            <p><strong>DNI:</strong> @usuario.Dni</p>
+            <p><strong>Celular:</strong> @usuario.Celular</p>
+            <p><strong>Fecha de Registro:</strong> @usuario.FechaRegistro.ToString("dd/MM/yyyy")</p>
+            <p><strong>Rol:</strong> @usuario.Rol</p>
+            <p><strong>Activo:</strong> @(usuario.Activo ? "Sí" : "No")</p>
+
+            <button class="btn btn-secondary mt-3" @onclick="Volver">
+                <i class="bi bi-arrow-left me-1"></i> Volver
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private Usuario usuario;
+
+    protected override void OnInitialized()
+    {
+        usuario = UsuarioService.GetUsuarios().FirstOrDefault(u => u.Id == Id);
+    }
+
+    private void Volver()
+    {
+        NavigationManager.NavigateTo("/usuarios");
+    }
+}

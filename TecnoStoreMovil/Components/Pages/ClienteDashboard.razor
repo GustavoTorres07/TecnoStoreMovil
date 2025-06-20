@@ -1,0 +1,76 @@
+﻿@page "/ClienteDashboard"
+@inject NavigationManager NavigationManager
+@inject SesionService SesionService
+
+@if (mostrarContenido)
+{
+    <div class="container mt-4">
+        <div class="text-center mb-4">
+            <h2>👋 Bienvenido, @SesionService.UsuarioActual?.Nombre</h2>
+            <p class="text-muted">¿Qué estás buscando hoy?</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card border-primary shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-layers display-4 text-primary mb-3"></i>
+                        <h5 class="card-title">Productos por Categoría</h5>
+                        <p class="card-text">Explorá nuestro catálogo de hardware, accesorios y más.</p>
+                        <NavLink class="btn btn-outline-primary w-100" href="/ProductosCliente">
+                            Ver Productos
+                        </NavLink>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card border-success shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-joystick display-4 text-success mb-3"></i>
+                        <h5 class="card-title">Juegos por Consola</h5>
+                        <p class="card-text">Elegí juegos para PS5, Xbox o PC por plataforma.</p>
+                        <NavLink class="btn btn-outline-success w-100" href="/JuegoCliente">
+                            Ver Juegos
+                        </NavLink>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card border-warning shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-cart4 display-4 text-warning mb-3"></i>
+                        <h5 class="card-title">Mi Carrito</h5>
+                        <p class="card-text">Revisá los productos que agregaste y finalizá tu compra.</p>
+                        <NavLink class="btn btn-outline-warning w-100" href="/Carrito">
+                            Ir al Carrito
+                        </NavLink>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="text-center mt-5">
+        <h4>Redirigiendo...</h4>
+    </div>
+}
+
+@code {
+    private bool mostrarContenido = false;
+
+    protected override void OnInitialized()
+    {
+        if (SesionService.EstaLogueado && SesionService.UsuarioActual?.Rol == RolUsuario.Cliente)
+        {
+            mostrarContenido = true;
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/");
+        }
+    }
+}

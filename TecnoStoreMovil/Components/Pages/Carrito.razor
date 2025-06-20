@@ -1,0 +1,94 @@
+﻿@page "/carrito"
+@inject CarritoService CarritoService
+@inject NavigationManager NavigationManager
+
+<h4 class="mt-4 text-center">🛒 Mi Carrito</h4>
+
+@if (!items.Any())
+{
+    <div class="alert alert-info text-center mt-5">
+        Tu carrito está vacío.
+        <br />
+        <button class="btn btn-outline-primary mt-3" @onclick="VolverAProductos">
+            <i class="bi bi-arrow-left-circle me-2"></i> Volver a Productos
+        </button>
+    </div>
+}
+else
+{
+    <div class="container mt-4">
+        <div class="row g-3">
+            @foreach (var item in items)
+            {
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <div class="row g-0 align-items-center">
+                            <div class="col-4 text-center p-2">
+                                <img src="@item.Producto.ImagenProducto" class="img-fluid rounded-start" alt="@item.Producto.Nombre" style="max-height: 80px; object-fit: cover;" />
+                            </div>
+                            <div class="col-8">
+                                <div class="card-body p-2">
+                                    <h6 class="card-title mb-1">@item.Producto.Nombre</h6>
+                                    <p class="mb-1 text-muted small">Precio: <strong>$@item.Producto.Precio</strong></p>
+                                    <p class="mb-1 text-muted small">Cantidad: <strong>@item.Cantidad</strong></p>
+                                    <p class="mb-2 text-muted small">Subtotal: <strong>$@(item.Cantidad * item.Producto.Precio)</strong></p>
+                                    <button class="btn btn-sm btn-danger" @onclick="() => EliminarItem(item.Producto.Id)">
+                                        <i class="bi bi-trash me-1"></i> Quitar
+                                    </button>
+                                    <NavLink class="btn btn-sm btn-outline-primary ms-2" href="@($"/ProductoDetalle/{item.Producto.Id}")">
+                                        <i class="bi bi-eye me-1"></i> Ver Detalle
+                                    </NavLink>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="mt-4 p-3 bg-light rounded shadow-sm">
+            <h5 class="mb-3 text-end">Total a pagar: <span class="text-success fw-bold">$@CarritoService.CalcularTotal()</span></h5>
+            <div class="d-flex flex-column gap-2">
+                <button class="btn btn-outline-secondary w-100" @onclick="LimpiarCarrito">
+                    <i class="bi bi-x-circle me-2"></i> Vaciar Carrito
+                </button>
+
+                <button class="btn btn-success w-100" @onclick="FinalizarCompra">
+                    <i class="bi bi-credit-card me-2"></i> Finalizar Compra
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<ItemCarrito> items = new();
+
+    protected override void OnInitialized()
+    {
+        items = CarritoService.ObtenerItems().ToList();
+    }
+
+    private void EliminarItem(int productoId)
+    {
+        CarritoService.EliminarItem(productoId);
+        items = CarritoService.ObtenerItems().ToList();
+    }
+
+    private void LimpiarCarrito()
+    {
+        CarritoService.LimpiarCarrito();
+        items.Clear();
+    }
+
+    private void FinalizarCompra()
+    {
+        CarritoService.LimpiarCarrito();
+        NavigationManager.NavigateTo("/confirmacion");
+    }
+
+    private void VolverAProductos()
+    {
+        NavigationManager.NavigateTo("/ProductosCliente");
+    }
+}

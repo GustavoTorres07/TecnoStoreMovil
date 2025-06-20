@@ -16,13 +16,22 @@
 
 <div class="container mt-4">
     <div class="row g-4 justify-content-center">
-        <div class="col-10">
-            <div class="card text-white bg-primary shadow h-100"
+        <div class="col-12 col-md-6 col-lg-5 col-xl-4">
+            <div class="card text-white bg-primary shadow mb-4"
                  @onclick="@(() => NavigationManager.NavigateTo("/usuarios"))"
                  style="cursor:pointer;">
                 <div class="card-body text-center">
                     <i class="bi bi-people-fill" style="font-size: 2rem;"></i>
                     <h5 class="mt-2">Gestión de Usuarios</h5>
+                </div>
+            </div>
+
+            <div class="card text-white bg-primary shadow mb-4"
+                 @onclick="@(() => NavigationManager.NavigateTo("/Productos"))"
+                 style="cursor:pointer;">
+                <div class="card-body text-center">
+                    <i class="bi bi-box-seam-fill" style="font-size: 2rem;"></i>
+                    <h5 class="mt-2">Gestionar Productos</h5>
                 </div>
             </div>
         </div>
@@ -34,8 +43,7 @@
 
     protected override void OnInitialized()
     {
-        // Suponemos que el último usuario validado queda cargado en el servicio
-        // (podés mejorarlo con un AppState o sistema de sesión)
-        usuario = UsuarioService.GetUsuarios().FirstOrDefault(u => u.Activo && u.Rol == RolUsuario.Administrador);
+        usuario = UsuarioService.GetUsuarios()
+            .FirstOrDefault(u => u.Activo && u.Rol == RolUsuario.Administrador);
     }
 }
