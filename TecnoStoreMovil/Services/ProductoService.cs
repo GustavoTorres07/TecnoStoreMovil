@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 using TecnoStoreMovil.Models;
 
 namespace TecnoStoreMovil.Services
@@ -17,9 +14,9 @@ namespace TecnoStoreMovil.Services
         {
             categorias = new List<Categoria>
             {
-                new Categoria { Id = 1, Nombre = "Consolas", Descripcion = "Videoconsolas" },
-                new Categoria { Id = 2, Nombre = "Accesorios", Descripcion = "Periféricos y accesorios" },
-                new Categoria { Id = 3, Nombre = "Juegos", Descripcion = "Juegos por plataforma" },
+                new Categoria { Id = 1, Nombre = "Consolas", Descripcion = "Videoconsolas", Activo = true },
+                new Categoria { Id = 2, Nombre = "Accesorios", Descripcion = "Periféricos y accesorios", Activo = true },
+                new Categoria { Id = 3, Nombre = "Juegos", Descripcion = "Juegos por plataforma", Activo = true },
             };
 
             productos = new List<Producto>
@@ -29,7 +26,7 @@ namespace TecnoStoreMovil.Services
                     Nombre = "PlayStation 5",
                     Descripcion = "Consola Sony PS5 con lector de discos.",
                     Precio = 799.99m,
-                    ImagenProducto = "images/producto_default.png",
+                    ImagenProducto = "images/ps5.jpg",
                     Cantidad = 10,
                     Stock = true,
                     CategoriaId = 1,
@@ -40,11 +37,24 @@ namespace TecnoStoreMovil.Services
                     Nombre = "Joystick DualSense",
                     Descripcion = "Control inalámbrico original para PS5.",
                     Precio = 99.99m,
-                    ImagenProducto = "images/producto_default.png",
+                    ImagenProducto = "images/jyps5.jpg",
                     Cantidad = 25,
                     Stock = true,
                     CategoriaId = 2,
                     Categoria = categorias.First(c => c.Id == 2)
+                },
+                new Producto {
+                    Id = 3,
+                    Nombre = "Spider-Man: Miles Morales",
+                    Descripcion = "Juego exclusivo de PS5",
+                    Precio = 69.99m,
+                    ImagenProducto = "images/spidermanps5.jpeg",
+                    Cantidad = 15,
+                    Stock = true,
+                    CategoriaId = 3, // Juegos
+                    Categoria = categorias.First(c => c.Id == 3),
+                    Plataforma = PlataformaJuego.PS5,
+                    FechaLanzamiento = new DateTime(2020, 11, 12)
                 }
             };
         }

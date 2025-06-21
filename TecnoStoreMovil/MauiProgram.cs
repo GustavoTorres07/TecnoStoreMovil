@@ -21,6 +21,9 @@ namespace TecnoStoreMovil
             builder.Services.AddSingleton<ProductoService>();
             builder.Services.AddSingleton<CarritoService>();
             builder.Services.AddSingleton<CategoriaService>();
+            builder.Services.AddSingleton<PedidoService>();
+
+
 
 
 

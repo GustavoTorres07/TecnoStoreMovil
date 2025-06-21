@@ -1,0 +1,159 @@
+﻿@page "/JuegoCliente"
+@inject ProductoService ProductoService
+@inject CarritoService CarritoService
+@inject NavigationManager NavigationManager
+
+<h3 class="mt-4 text-center">🎮 Juegos por Consola</h3>
+
+<!-- Selector de plataforma -->
+<div class="container mt-3">
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-6">
+            <label class="form-label fw-bold">Seleccioná una plataforma:</label>
+            <select class="form-select" @bind="PlataformaSeleccionada">
+                <option value="">Todas las plataformas</option>
+                @foreach (var plataforma in Enum.GetValues<PlataformaJuego>())
+                {
+                    <option value="@plataforma">@plataforma</option>
+                }
+            </select>
+        </div>
+    </div>
+</div>
+
+@if (juegosFiltrados.Count == 0)
+{
+    <div class="alert alert-warning text-center mt-4">
+        No hay juegos disponibles
+        @if (PlataformaSeleccionada.HasValue)
+        {
+            <span> para la plataforma <strong>@PlataformaSeleccionada</strong></span>
+        }
+        <span>.</span>
+    </div>
+}
+else
+{
+    <div class="container mt-4">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+            @foreach (var juego in juegosFiltrados)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <img src="@juego.ImagenProducto" class="card-img-top" alt="@juego.Nombre" style="object-fit: cover; height: 180px;" />
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@juego.Nombre</h5>
+                            <p class="card-text text-muted">@juego.Descripcion</p>
+                            <p class="fw-bold">💵 Precio: $@juego.Precio</p>
+                            <p class="text-secondary mb-2">🛑 Últimos disponibles: <strong>@juego.Cantidad</strong></p>
+                            <p class="text-muted small">🎮 Plataforma: <em>@juego.Plataforma</em></p>
+
+                            <div class="input-group mb-3">
+                                <button class="btn btn-outline-secondary" type="button"
+                                        @onclick="() => DisminuirCantidad(juego.Id)">
+                                    <i class="bi bi-dash"></i>
+                                </button>
+
+                                <input type="number" class="form-control text-center" min="1" max="@juego.Cantidad"
+                                       @bind="cantidades[juego.Id]" />
+
+                                <button class="btn btn-outline-secondary" type="button"
+                                        @onclick="() => AumentarCantidad(juego.Id, juego.Cantidad)">
+                                    <i class="bi bi-plus"></i>
+                                </button>
+                            </div>
+
+                            <button class="btn btn-success mt-auto w-100"
+                                    @onclick="() => AgregarAlCarrito(juego)">
+                                <i class="bi bi-cart-plus me-2"></i>Agregar al Carrito
+                            </button>
+
+                            <NavLink class="btn btn-outline-primary mt-2 w-100" href="@($"/ProductoDetalle/{juego.Id}")">
+                                <i class="bi bi-eye me-2"></i>Ver Detalles
+                            </NavLink>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private List<Producto> juegos = new();
+    private List<Producto> juegosFiltrados = new();
+    private Dictionary<int, int> cantidades = new();
+
+    private PlataformaJuego? _plataformaSeleccionada;
+
+    private PlataformaJuego? PlataformaSeleccionada
+    {
+        get => _plataformaSeleccionada;
+        set
+        {
+            if (_plataformaSeleccionada != value)
+            {
+                _plataformaSeleccionada = value;
+                FiltrarJuegos();
+            }
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        var categoriaJuegos = ProductoService.GetCategorias().FirstOrDefault(c => c.Nombre == "Juegos");
+
+        if (categoriaJuegos != null)
+        {
+            juegos = ProductoService.GetProductos()
+                .Where(p => p.CategoriaId == categoriaJuegos.Id && p.Stock && p.Cantidad > 0)
+                .ToList();
+
+            FiltrarJuegos();
+        }
+    }
+
+    private void FiltrarJuegos()
+    {
+        if (PlataformaSeleccionada.HasValue)
+        {
+            juegosFiltrados = juegos
+                .Where(j => j.Plataforma == PlataformaSeleccionada.Value)
+                .ToList();
+        }
+        else
+        {
+            juegosFiltrados = juegos.ToList();
+        }
+
+        // Iniciar o mantener cantidades
+        var ids = juegosFiltrados.Select(j => j.Id).ToHashSet();
+        foreach (var id in ids)
+            if (!cantidades.ContainsKey(id))
+                cantidades[id] = 1;
+
+        var aEliminar = cantidades.Keys.Except(ids).ToList();
+        foreach (var k in aEliminar)
+            cantidades.Remove(k);
+    }
+
+    private void AumentarCantidad(int juegoId, int max)
+    {
+        if (cantidades[juegoId] < max)
+            cantidades[juegoId]++;
+    }
+
+    private void DisminuirCantidad(int juegoId)
+    {
+        if (cantidades[juegoId] > 1)
+            cantidades[juegoId]--;
+    }
+
+    private void AgregarAlCarrito(Producto juego)
+    {
+        var cantidad = cantidades.ContainsKey(juego.Id) ? cantidades[juego.Id] : 1;
+
+        if (cantidad <= juego.Cantidad && cantidad > 0)
+            CarritoService.AgregarItem(juego, cantidad);
+    }
+}

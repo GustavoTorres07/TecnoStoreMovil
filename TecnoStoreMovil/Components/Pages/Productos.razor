@@ -31,6 +31,7 @@
                 <th>Precio</th>
                 <th>Cantidad</th>
                 <th>Categoría</th>
+                <th>Plataforma</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -43,6 +44,7 @@
                     <td>$@p.Precio</td>
                     <td>@p.Cantidad</td>
                     <td>@p.Categoria?.Nombre</td>
+                    <td>@(p.Categoria?.Nombre == "Juegos" ? p.Plataforma.ToString() : "-")</td> 
                     <td>
                         <div class="d-flex gap-2">
                             <button class="btn btn-sm btn-info px-3" title="Más info" @onclick="() => VerDetalleProducto(p.Id)">
@@ -85,6 +87,10 @@
                 </div>
                 <p class="mb-1"><strong>Precio:</strong> $@p.Precio</p>
                 <p class="mb-1"><strong>Cantidad:</strong> @p.Cantidad</p>
+                @if (p.Categoria?.Nombre == "Juegos")
+                {
+                    <p class="mb-1"><strong>Plataforma:</strong> @p.Plataforma</p>
+                }
                 <div class="d-flex justify-content-end gap-2 mt-3">
                     <button class="btn btn-sm btn-info px-3" title="Más info" @onclick="() => VerDetalleProducto(p.Id)">
                         <i class="bi bi-info-circle me-1"></i> Más info

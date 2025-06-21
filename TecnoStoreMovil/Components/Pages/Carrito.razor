@@ -1,5 +1,7 @@
 ﻿@page "/carrito"
 @inject CarritoService CarritoService
+@inject PedidoService PedidoService
+@inject SesionService SesionService
 @inject NavigationManager NavigationManager
 
 <h4 class="mt-4 text-center">🛒 Mi Carrito</h4>
@@ -83,8 +85,27 @@ else
 
     private void FinalizarCompra()
     {
+        if (items.Count == 0)
+            return;
+
+        // Crear resumen del pedido con nombre y cantidades
+        var resumen = string.Join(", ", items.Select(i => $"{i.Producto.Nombre} x{i.Cantidad}"));
+
+        var pedido = new Pedido
+        {
+            ClienteNombre = SesionService.UsuarioActual != null 
+            ? $"{SesionService.UsuarioActual.Nombre} {SesionService.UsuarioActual.Apellido}" 
+            : "Cliente Desconocido",
+            ResumenProductos = resumen
+            // Id, Fecha, Estado se asignan internamente en PedidoService
+        };
+
+        PedidoService.AddPedido(pedido);
+
         CarritoService.LimpiarCarrito();
-        NavigationManager.NavigateTo("/confirmacion");
+        items.Clear();
+
+        NavigationManager.NavigateTo("/confirmacion"); // O donde quieras mostrar confirmación
     }
 
     private void VolverAProductos()

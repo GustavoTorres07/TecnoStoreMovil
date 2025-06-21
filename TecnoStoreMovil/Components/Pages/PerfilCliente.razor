@@ -1,0 +1,75 @@
+﻿@page "/PerfilCliente"
+@inject SesionService SesionService
+@inject UsuarioService UsuarioService
+@inject NavigationManager NavigationManager
+
+<h4 class="mt-4 text-center">👤 Mi Perfil</h4>
+
+@if (usuario == null)
+{
+    <div class="alert alert-danger text-center mt-4">
+        No se encontró el usuario actual.
+    </div>
+}
+else
+{
+    <EditForm Model="@usuario" OnValidSubmit="GuardarCambios">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="container mt-4" style="max-width: 500px;">
+            <div class="mb-3">
+                <label>Nombre</label>
+                <InputText class="form-control" @bind-Value="usuario.Nombre" />
+            </div>
+            <div class="mb-3">
+                <label>Apellido</label>
+                <InputText class="form-control" @bind-Value="usuario.Apellido" />
+            </div>
+            <div class="mb-3">
+                <label>DNI</label>
+                <InputText class="form-control" @bind-Value="usuario.Dni" />
+            </div>
+            <div class="mb-3">
+                <label>Email</label>
+                <InputText class="form-control" @bind-Value="usuario.Email" />
+            </div>
+            <div class="mb-3">
+                <label>Celular</label>
+                <InputText class="form-control" @bind-Value="usuario.Celular" />
+            </div>
+
+            <div class="d-flex justify-content-center gap-3 mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save me-1"></i> Guardar Cambios
+                </button>
+
+                <button type="button" class="btn btn-secondary" @onclick="CancelarEdicion">
+                    <i class="bi bi-x-circle me-1"></i> Cancelar
+                </button>
+            </div>
+        </div>
+    </EditForm>
+}
+
+@code {
+    private Usuario? usuario;
+
+    protected override void OnInitialized()
+    {
+        usuario = SesionService.UsuarioActual;
+    }
+
+    private void GuardarCambios()
+    {
+        if (usuario != null)
+        {
+            UsuarioService.UpdateUsuario(usuario);
+            NavigationManager.NavigateTo("/ClienteDashboard");
+        }
+    }
+    private void CancelarEdicion()
+    {
+        NavigationManager.NavigateTo("/ClienteDashboard");
+    }
+}

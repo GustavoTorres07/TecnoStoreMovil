@@ -5,12 +5,12 @@
 
 <h3 class="mt-4 text-center">🛒 Productos Disponibles</h3>
 
-<!-- Filtro por categoría -->
+<!-- Filtros -->
 <div class="container mt-3">
     <div class="row justify-content-center mb-4">
         <div class="col-md-6">
             <label class="form-label fw-bold">Seleccioná una categoría:</label>
-            <select class="form-select" @bind="CategoriaSeleccionadaId" @bind:event="onchange">
+            <select class="form-select" @bind="CategoriaSeleccionadaId">
                 <option value="0">Todas las categorías</option>
                 @foreach (var categoria in categorias)
                 {
@@ -19,16 +19,49 @@
             </select>
         </div>
     </div>
+
+    @if (EsCategoriaJuegos)
+    {
+        <div class="row justify-content-center mb-4">
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Seleccioná una plataforma:</label>
+                <select class="form-select" @bind="PlataformaSeleccionada">
+                    <option value="">Todas las plataformas</option>
+                    @foreach (var plataforma in Enum.GetValues<PlataformaJuego>())
+                    {
+                        <option value="@plataforma">@plataforma</option>
+                    }
+                </select>
+            </div>
+        </div>
+    }
 </div>
 
+<!-- Mensaje si no hay productos -->
 @if (productosFiltrados.Count == 0)
 {
-    <div class="alert alert-info text-center mt-4">
-        No hay productos disponibles por el momento.
-    </div>
+    if (EsCategoriaJuegos && PlataformaSeleccionada.HasValue)
+    {
+        <div class="alert alert-warning text-center mt-4">
+            No hay juegos disponibles para la plataforma <strong>@PlataformaSeleccionada</strong>.
+        </div>
+    }
+    else if (EsCategoriaJuegos)
+    {
+        <div class="alert alert-warning text-center mt-4">
+            No hay juegos disponibles en este momento.
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info text-center mt-4">
+            No hay productos disponibles por el momento.
+        </div>
+    }
 }
 else
 {
+    <!-- Mostrar productos -->
     <div class="container mt-4">
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
             @foreach (var producto in productosFiltrados)
@@ -43,22 +76,19 @@ else
                             <p class="text-secondary mb-2">🛑 Últimos disponibles: <strong>@producto.Cantidad</strong></p>
 
                             <div class="input-group mb-3">
-                                <button class="btn btn-outline-secondary" type="button"
-                                        @onclick="() => DisminuirCantidad(producto.Id)">
+                                <button class="btn btn-outline-secondary" type="button" @onclick="() => DisminuirCantidad(producto.Id)">
                                     <i class="bi bi-dash"></i>
                                 </button>
 
                                 <input type="number" class="form-control text-center" min="1" max="@producto.Cantidad"
                                        @bind="cantidades[producto.Id]" />
 
-                                <button class="btn btn-outline-secondary" type="button"
-                                        @onclick="() => AumentarCantidad(producto.Id, producto.Cantidad)">
+                                <button class="btn btn-outline-secondary" type="button" @onclick="() => AumentarCantidad(producto.Id, producto.Cantidad)">
                                     <i class="bi bi-plus"></i>
                                 </button>
                             </div>
 
-                            <button class="btn btn-success mt-auto w-100"
-                                    @onclick="() => AgregarAlCarrito(producto)">
+                            <button class="btn btn-success mt-auto w-100" @onclick="() => AgregarAlCarrito(producto)">
                                 <i class="bi bi-cart-plus me-2"></i>Agregar al Carrito
                             </button>
 
@@ -80,7 +110,11 @@ else
     private Dictionary<int, int> cantidades = new();
 
     private int categoriaSeleccionadaId;
+    private PlataformaJuego? _plataformaSeleccionada;
 
+    private string NombreCategoriaJuegos = "Juegos";
+
+    // Propiedades con lógica personalizada
     private int CategoriaSeleccionadaId
     {
         get => categoriaSeleccionadaId;
@@ -89,46 +123,64 @@ else
             if (categoriaSeleccionadaId != value)
             {
                 categoriaSeleccionadaId = value;
+                PlataformaSeleccionada = null;
                 FiltrarProductos();
             }
         }
     }
+
+    private PlataformaJuego? PlataformaSeleccionada
+    {
+        get => _plataformaSeleccionada;
+        set
+        {
+            if (_plataformaSeleccionada != value)
+            {
+                _plataformaSeleccionada = value;
+                FiltrarProductos();
+            }
+        }
+    }
+
+    private bool EsCategoriaJuegos =>
+        categorias.FirstOrDefault(c => c.Id == categoriaSeleccionadaId)?.Nombre == NombreCategoriaJuegos;
 
     protected override void OnInitialized()
     {
         productos = ProductoService.GetProductos().Where(p => p.Stock && p.Cantidad > 0).ToList();
         categorias = ProductoService.GetCategorias();
 
-        // Iniciar filtro en todas las categorías
-        categoriaSeleccionadaId = 0;
+        CategoriaSeleccionadaId = 0;
         FiltrarProductos();
-
-        // Inicializar cantidades con 1 para cada producto filtrado
-        foreach (var p in productosFiltrados)
-            cantidades[p.Id] = 1;
     }
 
     private void FiltrarProductos()
     {
         if (categoriaSeleccionadaId == 0)
+        {
             productosFiltrados = productos.ToList();
+        }
         else
+        {
             productosFiltrados = productos.Where(p => p.CategoriaId == categoriaSeleccionadaId).ToList();
 
-        // Actualizar cantidades para productos filtrados
-        var nuevosIds = productosFiltrados.Select(p => p.Id).ToHashSet();
+            if (EsCategoriaJuegos && PlataformaSeleccionada.HasValue)
+            {
+                productosFiltrados = productosFiltrados
+                    .Where(p => p.Plataforma == PlataformaSeleccionada.Value)
+                    .ToList();
+            }
+        }
 
-        // Agregar nuevos productos con cantidad 1 si no existen
+        // Actualizar cantidades
+        var nuevosIds = productosFiltrados.Select(p => p.Id).ToHashSet();
         foreach (var id in nuevosIds)
             if (!cantidades.ContainsKey(id))
                 cantidades[id] = 1;
 
-        // Opcional: eliminar productos no filtrados de cantidades para ahorrar memoria
         var keysToRemove = cantidades.Keys.Except(nuevosIds).ToList();
         foreach (var k in keysToRemove)
             cantidades.Remove(k);
-
-        StateHasChanged();
     }
 
     private void AumentarCantidad(int productoId, int max)
@@ -146,7 +198,6 @@ else
     private void AgregarAlCarrito(Producto producto)
     {
         var cantidad = cantidades.ContainsKey(producto.Id) ? cantidades[producto.Id] : 1;
-
         if (cantidad <= producto.Cantidad && cantidad > 0)
             CarritoService.AgregarItem(producto, cantidad);
     }

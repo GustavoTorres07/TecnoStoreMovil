@@ -14,13 +14,24 @@ else
 {
     <div class="container mt-4">
         <div class="card shadow-sm">
-            <img src="@producto.ImagenProducto" class="card-img-top" alt="@producto.Nombre" style="object-fit: cover; max-height: 300px;" />
+            <img src="@producto.ImagenProducto"
+                 class="card-img-top"
+                 alt="@producto.Nombre"
+                 style="object-fit: cover; max-height: 300px;" />
+
             <div class="card-body">
                 <h4 class="card-title">@producto.Nombre</h4>
                 <p class="card-text text-muted">@producto.Descripcion</p>
                 <p class="fw-bold">💵 Precio: $@producto.Precio</p>
                 <p class="text-secondary">🛑 Últimos disponibles: <strong>@producto.Cantidad</strong></p>
-                <p class="text-muted small">Categoría: <em>@producto.Categoria?.Nombre</em></p>
+                <p class="text-muted small">📁 Categoría: <em>@producto.Categoria?.Nombre</em></p>
+
+                @if (producto.Categoria?.Nombre == "Juegos")
+                {
+                    <hr />
+                    <p><strong>🎮 Plataforma:</strong> @producto.Plataforma</p>
+                    <p><strong>📅 Lanzamiento:</strong> @producto.FechaLanzamiento?.ToString("dd/MM/yyyy")</p>
+                }
 
                 <button class="btn btn-outline-primary mt-3" @onclick="Volver">
                     <i class="bi bi-arrow-left-circle me-2"></i> Volver a Productos
@@ -42,6 +53,6 @@ else
 
     private void Volver()
     {
-        NavigationManager.NavigateTo("/ProductosCliente");
+        NavigationManager.NavigateTo("/Productos");
     }
 }

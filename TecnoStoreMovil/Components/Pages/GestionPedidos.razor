@@ -1,0 +1,152 @@
+﻿@page "/GestionPedidos"
+@inject PedidoService PedidoService
+@inject IJSRuntime JSRuntime
+
+<h3 class="mt-4 text-center">📦 Gestión de Pedidos</h3>
+
+@if (pedidos.Count == 0)
+{
+    <div class="alert alert-info text-center mt-4">
+        No hay pedidos para mostrar.
+    </div>
+}
+else
+{
+    <!-- Tabla para pantallas grandes -->
+    <div class="d-none d-md-block">
+        <table class="table table-bordered table-striped align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Id</th>
+                    <th>Cliente</th>
+                    <th>Fecha</th>
+                    <th>Resumen</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var pedido in pedidos)
+                {
+                    <tr>
+                        <td>@pedido.Id</td>
+                        <td>@pedido.ClienteNombre</td>
+                        <td>@pedido.Fecha.ToString("g")</td>
+                        <td>@pedido.ResumenProductos</td>
+                        <td>
+                            @switch (pedido.Estado)
+                            {
+                                case EstadoPedido.Pendiente:
+                                    <span class="badge bg-warning text-dark">Pendiente</span>
+                                    ;
+                                    break;
+                                case EstadoPedido.Aceptado:
+                                    <span class="badge bg-success">Aceptado</span>
+                                    ;
+                                    break;
+                                case EstadoPedido.Rechazado:
+                                    <span class="badge bg-danger">Rechazado</span>
+                                    ;
+                                    break;
+                            }
+                        </td>
+                        <td>
+                            @if (pedido.Estado == EstadoPedido.Pendiente)
+                            {
+                                <button class="btn btn-sm btn-success me-1" title="Aceptar"
+                                        @onclick="() => CambiarEstadoPedido(pedido, EstadoPedido.Aceptado)">
+                                    <i class="bi bi-check-lg"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" title="Rechazar"
+                                        @onclick="() => ConfirmarRechazo(pedido)">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            }
+                            else
+                            {
+                                <span class="text-muted">-</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Cards para pantallas pequeñas -->
+    <div class="d-md-none">
+        @foreach (var pedido in pedidos)
+        {
+            <div class="card mb-3 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Pedido #@pedido.Id - @pedido.ClienteNombre</h5>
+                    <p class="card-text"><small class="text-muted">@pedido.Fecha.ToString("g")</small></p>
+                    <p><strong>Resumen:</strong> @pedido.ResumenProductos</p>
+                    <p>
+                        <strong>Estado: </strong>
+                        @switch (pedido.Estado)
+                        {
+                            case EstadoPedido.Pendiente:
+                                <span class="badge bg-warning text-dark">Pendiente</span>
+                                ;
+                                break;
+                            case EstadoPedido.Aceptado:
+                                <span class="badge bg-success">Aceptado</span>
+                                ;
+                                break;
+                            case EstadoPedido.Rechazado:
+                                <span class="badge bg-danger">Rechazado</span>
+                                ;
+                                break;
+                        }
+                    </p>
+                    @if (pedido.Estado == EstadoPedido.Pendiente)
+                    {
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-success flex-fill" title="Aceptar"
+                                    @onclick="() => CambiarEstadoPedido(pedido, EstadoPedido.Aceptado)">
+                                <i class="bi bi-check-lg me-1"></i> Aceptar
+                            </button>
+                            <button class="btn btn-danger flex-fill" title="Rechazar"
+                                    @onclick="() => ConfirmarRechazo(pedido)">
+                                <i class="bi bi-x-lg me-1"></i> Rechazar
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<Pedido> pedidos = new();
+
+    protected override void OnInitialized()
+    {
+        pedidos = PedidoService.GetPedidos();
+    }
+
+    private async Task CambiarEstadoPedido(Pedido pedido, EstadoPedido nuevoEstado)
+    {
+        pedido.Estado = nuevoEstado;
+        PedidoService.UpdatePedido(pedido);
+        pedidos = PedidoService.GetPedidos();
+
+        string mensaje = nuevoEstado == EstadoPedido.Aceptado
+            ? "Pedido aceptado."
+            : "Pedido rechazado.";
+
+        await JSRuntime.InvokeVoidAsync("alert", mensaje);
+        StateHasChanged();
+    }
+
+    private async Task ConfirmarRechazo(Pedido pedido)
+    {
+        bool confirmado = await JSRuntime.InvokeAsync<bool>("confirm", "¿Seguro que deseas rechazar este pedido?");
+        if (confirmado)
+        {
+            await CambiarEstadoPedido(pedido, EstadoPedido.Rechazado);
+        }
+    }
+}
