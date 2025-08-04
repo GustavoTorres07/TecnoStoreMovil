@@ -22,7 +22,7 @@ namespace TecnoStoreMovil.Services
                     Dni = "39054025",
                     Email = "gtreal62@gmail.com",
                     Celular = "+54 9 2954-216751",
-                    Clave = "HalaMadrid7",
+                    Clave = "admin123",
                     FechaRegistro = DateTime.Now,
                     FotoUsuario = "images/usuario_default.png",
                     Rol = RolUsuario.Administrador,
