@@ -12,7 +12,6 @@ namespace TecnoStoreMovil.Services
         public PedidoService()
         {
             pedidos = new List<Pedido>();
-            // Puedes precargar algunos pedidos de ejemplo aquí si quieres
         }
 
         // Obtener todos los pedidos
@@ -41,7 +40,6 @@ namespace TecnoStoreMovil.Services
             return true;
         }
 
-        // Eliminar un pedido (opcional)
         public bool DeletePedido(int id)
         {
             var pedido = GetPedido(id);
