@@ -1,0 +1,312 @@
+﻿@page "/admin/categorias"
+@using System.ComponentModel.DataAnnotations
+@using TecnoStoreMovil.Services.Contrato
+@using TecnoStoreMovil.Shared.DTOs
+@using TecnoStoreMovil.Components.Cards
+@inject ICatalogoClient Catalogo
+@inject IAdminCategoriasClient AdminCategorias
+@inject NavigationManager Nav
+
+<div class="container py-3">
+    <div class="d-flex align-items-center mb-3">
+        <h3 class="me-auto mb-0"><i class="bi bi-tags"></i> Administración · Categorías</h3>
+        <button class="btn btn-primary" @onclick="Nueva">
+            <i class="bi bi-plus-circle"></i> Nueva
+        </button>
+    </div>
+
+    <div class="row g-2 mb-3">
+        <div class="col-12 col-md-6">
+            <input class="form-control" placeholder="Buscar por nombre..."
+                   @bind="_q" @bind:event="oninput" />
+        </div>
+        <div class="col-12 col-md-6 text-md-end">
+            <button class="btn btn-outline-secondary me-2" @onclick="Refrescar">
+                <i class="bi bi-arrow-repeat"></i> Refrescar
+            </button>
+            <button class="btn btn-outline-primary" @onclick="Buscar">
+                <i class="bi bi-search"></i> Buscar
+            </button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(_toast))
+    {
+        <div class="alert alert-success">@_toast</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <div class="alert alert-danger">@_error</div>
+    }
+
+    @if (_loading)
+    {
+        <div class="alert alert-info">Cargando...</div>
+    }
+    else if (_items.Count == 0)
+    {
+        <div class="alert alert-warning">No hay categorías.</div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+            @foreach (var c in _items)
+            {
+                <div class="col">
+                    <CategoriaCard Categoria="c" OnEdit="Editar" OnDelete="Eliminar" />
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<!-- Modal Crear/Editar -->
+@if (_showForm)
+{
+    <div class="@ModalCss(true)" tabindex="-1" role="dialog" style="display:block;">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-tags"></i> @(_editId is null ? "Nueva Categoría" : $"Editar Categoría (ID: {_editId})")
+                    </h5>
+                    <button type="button" class="btn-close" aria-label="Close" @onclick="CerrarForm"></button>
+                </div>
+
+                <EditForm Model="_vm" OnValidSubmit="GuardarAsync">
+                    <DataAnnotationsValidator />
+                    <div class="modal-body">
+                        @if (!string.IsNullOrWhiteSpace(_formError))
+                        {
+                            <div class="alert alert-danger">@_formError</div>
+                        }
+
+                        <div class="mb-3">
+                            <label class="form-label">Nombre</label>
+                            <InputText class="form-control" @bind-Value="_vm.Nombre" />
+                            <ValidationMessage For="@(() => _vm.Nombre)" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Descripción</label>
+                            <InputText class="form-control" @bind-Value="_vm.Descripcion" />
+                            <ValidationMessage For="@(() => _vm.Descripcion)" />
+                        </div>
+
+                        <div class="form-check">
+                            <InputCheckbox class="form-check-input" @bind-Value="_vm.Activo" />
+                            <label class="form-check-label">Activo</label>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button class="btn btn-primary" disabled="@_saving">
+                            <i class="bi bi-save"></i> Guardar
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" @onclick="CerrarForm">Cancelar</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
+
+<!-- Modal Confirmar Eliminación -->
+@if (_confirmDelete is not null)
+{
+    <div class="@ModalCss(true)" tabindex="-1" role="dialog" style="display:block;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-danger">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger">
+                        <i class="bi bi-exclamation-octagon"></i> Eliminar Categoría
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="CancelarEliminar"></button>
+                </div>
+                <div class="modal-body">
+                    ¿Seguro que deseas eliminar la categoría
+                    <strong>@_confirmDelete.Nombre</strong> (ID @_confirmDelete.Id)?
+                    <div class="small text-muted mt-2">
+                        * No podrás eliminar si existen productos asociados (FK).
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(_deleteError))
+                    {
+                        <div class="alert alert-danger mt-3">@_deleteError</div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-danger" @onclick="EliminarConfirmado">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </button>
+                    <button class="btn btn-outline-secondary" @onclick="CancelarEliminar">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
+
+@code {
+    // Estado general
+    List<CategoriaDto> _items = new();
+    string? _q;
+    bool _loading;
+    string? _toast;
+    string? _error;
+
+    // Modal Form (Create/Update)
+    bool _showForm;
+    bool _saving;
+    int? _editId;
+    CategoriaFormVm _vm = new();
+    string? _formError;
+
+    // Modal Delete
+    CategoriaDto? _confirmDelete;
+    string? _deleteError;
+
+    protected override async Task OnInitializedAsync() => await CargarAsync();
+
+    async Task CargarAsync()
+    {
+        try
+        {
+            _loading = true;
+            _error = _toast = null;
+
+            var data = await Catalogo.GetCategoriasAsync();
+            if (!string.IsNullOrWhiteSpace(_q))
+                data = data.Where(x => x.Nombre.Contains(_q, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            _items = data.OrderBy(c => c.Nombre).ToList();
+        }
+        catch (Exception ex)
+        {
+            _error = $"Error al cargar: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    Task Buscar() => CargarAsync();
+    Task Refrescar() { _q = null; return CargarAsync(); }
+
+    // --- Crear / Editar ---
+    void Nueva()
+    {
+        _editId = null;
+        _formError = null;
+        _vm = new CategoriaFormVm { Activo = true };
+        _showForm = true;
+    }
+
+    void Editar(int id)
+    {
+        var c = _items.FirstOrDefault(x => x.Id == id);
+        if (c is null) return;
+
+        _editId = id;
+        _formError = null;
+        _vm = new CategoriaFormVm
+        {
+            Nombre = c.Nombre,
+            Descripcion = c.Descripcion,
+            Activo = c.Activo
+        };
+        _showForm = true;
+    }
+
+    async Task GuardarAsync()
+    {
+        _formError = null;
+        _saving = true;
+        try
+        {
+            var dto = new CategoriaSaveDto(_vm.Nombre!, _vm.Descripcion, _vm.Activo);
+
+            if (_editId is null)
+            {
+                var id = await AdminCategorias.CreateAsync(dto);
+                if (id is null) { _formError = "No se pudo crear (409/500)."; return; }
+                _toast = "Categoría creada correctamente.";
+            }
+            else
+            {
+                var ok = await AdminCategorias.UpdateAsync(_editId.Value, dto);
+                if (!ok) { _formError = "No se pudo actualizar."; return; }
+                _toast = "Categoría actualizada correctamente.";
+            }
+
+            _showForm = false;
+            await CargarAsync();
+        }
+        catch (Exception ex)
+        {
+            _formError = ex.Message;
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    void CerrarForm()
+    {
+        _showForm = false;
+        _formError = null;
+    }
+
+    // --- Eliminar ---
+    void Eliminar(int id)
+    {
+        var c = _items.FirstOrDefault(x => x.Id == id);
+        if (c is null) return;
+        _deleteError = null;
+        _confirmDelete = c;
+    }
+
+    void CancelarEliminar()
+    {
+        _confirmDelete = null;
+        _deleteError = null;
+    }
+
+    async Task EliminarConfirmado()
+    {
+        if (_confirmDelete is null) return;
+        try
+        {
+            var ok = await AdminCategorias.DeleteAsync(_confirmDelete.Id);
+            if (!ok)
+            {
+                _deleteError = "No se pudo eliminar. ¿Tiene productos asociados?";
+                return;
+            }
+            _toast = "Categoría eliminada.";
+            _confirmDelete = null;
+            await CargarAsync();
+        }
+        catch (Exception ex)
+        {
+            _deleteError = ex.Message;
+        }
+    }
+
+    // Helpers
+    string ModalCss(bool show) => show ? "modal fade show" : "modal fade";
+
+    // VM del formulario
+    class CategoriaFormVm
+    {
+        [Required, StringLength(100)]
+        public string? Nombre { get; set; }
+
+        [StringLength(200)]
+        public string? Descripcion { get; set; }
+
+        public bool Activo { get; set; } = true;
+    }
+}

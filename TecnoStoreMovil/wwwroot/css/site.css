@@ -1,0 +1,13 @@
+﻿/* Asegura alineación y ancho fijo para los íconos del dropdown */
+.dropdown-item .bi {
+    width: 1.25rem; /* columna fija para icono */
+    text-align: center;
+    line-height: 1; /* evita que “bajen” */
+    position: relative;
+    top: 0; /* por si algún tema los desplaza */
+}
+
+/* Si no usás fs-5, deja el tamaño consistente */
+.dropdown-menu .bi {
+    font-size: 1.1rem;
+}

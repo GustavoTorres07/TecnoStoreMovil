@@ -1,0 +1,69 @@
+﻿@* Modal de confirmación sin JS (emula Bootstrap) *@
+@namespace TecnoStoreMovil.Components.Shared
+
+@if (IsOpen)
+{
+    <div class="modal-backdrop fade show"></div>
+
+    <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="@_labelId" aria-describedby="@_descId">
+        <div class="modal-dialog @SizeClass" role="document">
+            <div class="modal-content">
+                <div class="modal-header @(IsDanger ? "border-danger" : null)">
+                    <h5 class="modal-title" id="@_labelId">@Title</h5>
+                    <button type="button" class="btn-close" aria-label="Cerrar" @onclick="Cancel"></button>
+                </div>
+
+                <div class="modal-body" id="@_descId">
+                    @if (!string.IsNullOrWhiteSpace(Body))
+                    {
+                        <p>@Body</p>
+                    }
+                    else
+                    {
+                        @ChildContent
+                    }
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" @onclick="Cancel">@CancelText</button>
+                    <button type="button" class="btn @(IsDanger ? "btn-danger" : "btn-primary")" @onclick="Confirm">@ConfirmText</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private readonly string _labelId = $"modalTitle_{Guid.NewGuid():N}";
+    private readonly string _descId  = $"modalDesc_{Guid.NewGuid():N}";
+
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public string? Title { get; set; } = "Confirmar";
+    [Parameter] public string? Body { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string ConfirmText { get; set; } = "Aceptar";
+    [Parameter] public string CancelText  { get; set; } = "Cancelar";
+    [Parameter] public bool IsDanger { get; set; } = false;
+    /// sm | md | lg | xl
+    [Parameter] public string Size { get; set; } = "md";
+
+    [Parameter] public EventCallback OnConfirm { get; set; }
+    [Parameter] public EventCallback OnCancel  { get; set; }
+
+    private string SizeClass => Size switch
+    {
+        "sm" => "modal-sm",
+        "lg" => "modal-lg",
+        "xl" => "modal-xl",
+        _    => ""
+    };
+
+    private async Task Confirm()
+    {
+        if (OnConfirm.HasDelegate) await OnConfirm.InvokeAsync();
+    }
+    private async Task Cancel()
+    {
+        if (OnCancel.HasDelegate) await OnCancel.InvokeAsync();
+    }
+}

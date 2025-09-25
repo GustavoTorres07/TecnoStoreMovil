@@ -1,0 +1,10 @@
+﻿@page "/admin/pedidos/{Id:int}"
+@code { [Parameter] public int Id { get; set; } }
+
+    <div class="container py-3">
+        <h3><i class="bi bi-file-earmark-text"></i> Pedido #@Id</h3>
+        <div class="alert alert-secondary">
+            Detalle en construcción (espera endpoints de pedidos).
+        </div>
+        <a class="btn btn-outline-secondary" href="/admin/pedidos">Volver</a>
+    </div>

@@ -1,0 +1,241 @@
+﻿@page "/admin/usuarios/editar/{Id:int}"
+@using System.ComponentModel.DataAnnotations
+@using TecnoStoreMovil.Services.Contrato
+@using TecnoStoreMovil.Shared.DTOs
+@inject IUsuariosClient UsuariosClient
+@inject NavigationManager Nav
+
+<div class="container py-3">
+    <h3><i class="bi bi-pencil-square"></i> Editar Usuario</h3>
+
+    @if (_loading)
+    {
+        <div class="alert alert-info"><i class="bi bi-hourglass-split"></i> Cargando...</div>
+    }
+    else if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <div class="alert alert-danger">@_error</div>
+    }
+    else
+    {
+        <EditForm Model="@_vm" OnValidSubmit="GuardarAsync">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Nombre</label>
+                    <InputText class="form-control" @bind-Value="_vm.Nombre" />
+                    <ValidationMessage For="@(() => _vm.Nombre)" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Apellido</label>
+                    <InputText class="form-control" @bind-Value="_vm.Apellido" />
+                    <ValidationMessage For="@(() => _vm.Apellido)" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Email</label>
+                    <InputText class="form-control" @bind-Value="_vm.Email" />
+                    <ValidationMessage For="@(() => _vm.Email)" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Clave</label>
+                    <InputText class="form-control" type="password" @bind-Value="_vm.Clave" />
+                    <ValidationMessage For="@(() => _vm.Clave)" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Teléfono</label>
+                    <InputText class="form-control" @bind-Value="_vm.Telefono" />
+                </div>
+                <div class="col-md-6 d-flex align-items-end">
+                    <div class="form-check">
+                        <InputCheckbox class="form-check-input" @bind-Value="_vm.Activo" />
+                        <label class="form-check-label">Activo</label>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Rol principal</label>
+                    <InputSelect class="form-select" @bind-Value="_vm.RolPrincipal">
+                        @foreach (var r in _roles) { <option value="@r">@r</option> }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => _vm.RolPrincipal)" />
+                </div>
+
+                <div class="col-12">
+                    <h5 class="mt-3">Dirección (opcional)</h5>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Calle</label>
+                    <InputText class="form-control" @bind-Value="_vm.Calle" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Número</label>
+                    <InputText class="form-control" @bind-Value="_vm.Numero" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Ciudad</label>
+                    <InputText class="form-control" @bind-Value="_vm.Ciudad" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Provincia</label>
+                    <InputText class="form-control" @bind-Value="_vm.Provincia" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Código Postal</label>
+                    <InputText class="form-control" @bind-Value="_vm.CodigoPostal" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">País</label>
+                    <InputText class="form-control" @bind-Value="_vm.Pais" />
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex gap-2">
+                <button class="btn btn-primary" disabled="@_saving">
+                    <i class="bi bi-save"></i> Guardar
+                </button>
+                <button type="button" class="btn btn-outline-secondary" @onclick="Volver">
+                    Cancelar
+                </button>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(_msg))
+            {
+                <div class="alert alert-success mt-3">@_msg</div>
+            }
+            @if (!string.IsNullOrWhiteSpace(_errorSave))
+            {
+                <div class="alert alert-danger mt-3">@_errorSave</div>
+            }
+        </EditForm>
+    }
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private readonly string[] _roles = new[] { "Administrador", "Cliente" };
+
+    private UsuarioFormVm _vm = new();
+    private bool _loading = true;
+    private bool _saving;
+    private string? _msg;
+    private string? _error;
+    private string? _errorSave;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var u = await UsuariosClient.GetByIdAsync(Id);
+            if (u is null) { _error = "Usuario no encontrado."; return; }
+
+            // map a VM
+            _vm = new UsuarioFormVm
+            {
+                Nombre = u.Nombre,
+                Apellido = u.Apellido,
+                Email = u.Email,
+                Clave = "", // por seguridad no mostramos la clave actual; obligamos a reingresarla
+                Telefono = u.Telefono,
+                Activo = u.Activo,
+                RolPrincipal = u.Roles?.FirstOrDefault() ?? "Cliente",
+                Calle = u.Direccion?.Calle,
+                Numero = u.Direccion?.Numero,
+                Ciudad = u.Direccion?.Ciudad,
+                Provincia = u.Direccion?.Provincia,
+                CodigoPostal = u.Direccion?.CodigoPostal,
+                Pais = u.Direccion?.Pais
+            };
+        }
+        catch (Exception ex)
+        {
+            _error = $"Error al cargar: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task GuardarAsync()
+    {
+        _msg = null;
+        _errorSave = null;
+        _saving = true;
+
+        try
+        {
+            DireccionSaveDto? dir = null;
+            if (!string.IsNullOrWhiteSpace(_vm.Calle) &&
+                !string.IsNullOrWhiteSpace(_vm.Ciudad) &&
+                !string.IsNullOrWhiteSpace(_vm.Provincia) &&
+                !string.IsNullOrWhiteSpace(_vm.CodigoPostal) &&
+                !string.IsNullOrWhiteSpace(_vm.Pais))
+            {
+                dir = new DireccionSaveDto(_vm.Calle!, _vm.Numero, _vm.Ciudad!, _vm.Provincia!, _vm.CodigoPostal!, _vm.Pais!);
+            }
+
+            var dto = new UsuarioSaveDto(
+                _vm.Nombre!, _vm.Apellido!, _vm.Email!, _vm.Clave!, 
+                string.IsNullOrWhiteSpace(_vm.Telefono) ? null : _vm.Telefono,
+                _vm.Activo, dir, _vm.RolPrincipal!
+            );
+
+            var ok = await UsuariosClient.UpdateAsync(Id, dto);
+            if (!ok)
+            {
+                _errorSave = "No se pudo actualizar el usuario.";
+                return;
+            }
+
+            Nav.NavigateTo("/admin/usuarios", true);
+        }
+        catch (Exception ex)
+        {
+            _errorSave = ex.Message;
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private void Volver() => Nav.NavigateTo("/admin/usuarios");
+
+    // VM con validaciones
+    private class UsuarioFormVm
+    {
+        [Required, StringLength(100)]
+        public string? Nombre { get; set; }
+
+        [Required, StringLength(100)]
+        public string? Apellido { get; set; }
+
+        [Required, EmailAddress, StringLength(150)]
+        public string? Email { get; set; }
+
+        [Required, StringLength(150, MinimumLength = 3)]
+        public string? Clave { get; set; }
+
+        [StringLength(30)]
+        public string? Telefono { get; set; }
+
+        public bool Activo { get; set; } = true;
+
+        [Required]
+        public string? RolPrincipal { get; set; } = "Cliente";
+
+        // Dirección (opcional)
+        public string? Calle { get; set; }
+        public string? Numero { get; set; }
+        public string? Ciudad { get; set; }
+        public string? Provincia { get; set; }
+        public string? CodigoPostal { get; set; }
+        public string? Pais { get; set; }
+    }
+}

@@ -1,0 +1,106 @@
+﻿@using TecnoStoreMovil.Services.Contrato
+@inject ISesionService Sesion
+@inject NavigationManager Nav
+
+<nav class="navbar ts-navbar">
+    <div class="container-fluid flex-wrap gap-2">
+
+        <!-- Brand + tu SVG -->
+        <NavLink class="navbar-brand d-flex align-items-center gap-2 me-auto" href="/productos" Match="NavLinkMatch.All">
+            <!-- Cargá tu SVG en wwwroot/images/tecnostore.svg -->
+            <img class="ts-logo-img" src="img/logo.svg" alt="TecnoStore" />
+            <span class="fw-semibold">TecnoStore</span>
+        </NavLink>
+
+        <!-- Menú principal (scroll horizontal en xs/sm, grid en md+) -->
+        <div class="ts-navwrap">
+            <div class="ts-navrail">
+                <NavLink class="ts-link" href="/productos" Match="NavLinkMatch.Prefix">
+                    <i class="bi bi-bag me-1"></i> Productos
+                </NavLink>
+
+                @if (_isLogged && string.Equals(_rol, "Cliente", StringComparison.OrdinalIgnoreCase))
+                {
+                    <NavLink class="ts-link" href="/carrito" Match="NavLinkMatch.Prefix">
+                        <i class="bi bi-cart3 me-1"></i> Carrito
+                    </NavLink>
+                    <NavLink class="ts-link" href="/mis-pedidos" Match="NavLinkMatch.Prefix">
+                        <i class="bi bi-receipt me-1"></i> Mis pedidos
+                    </NavLink>
+                }
+
+                @if (_isLogged && string.Equals(_rol, "Administrador", StringComparison.OrdinalIgnoreCase))
+                {
+                    <span class="ts-sep d-none d-md-inline mx-1" aria-hidden="true"></span>
+                    <span class="ts-label d-none d-md-inline">Admin</span>
+
+                    <NavLink class="ts-link" href="/admin/usuarios" Match="NavLinkMatch.Prefix">
+                        <i class="bi bi-people me-1"></i> Usuarios
+                    </NavLink>
+                    <NavLink class="ts-link" href="/admin/categorias" Match="NavLinkMatch.Prefix">
+                        <i class="bi bi-tags me-1"></i> Categorías
+                    </NavLink>
+                    <NavLink class="ts-link" href="/admin/productos" Match="NavLinkMatch.Prefix">
+                        <i class="bi bi-box-seam me-1"></i> Productos
+                    </NavLink>
+                    <NavLink class="ts-link" href="/admin/pedidos" Match="NavLinkMatch.Prefix">
+                        <i class="bi bi-receipt-cutoff me-1"></i> Pedidos
+                    </NavLink>
+                }
+
+                <NavLink class="ts-link" href="/acercade" Match="NavLinkMatch.All">
+                    <i class="bi bi-info-circle me-1"></i> Acerca de
+                </NavLink>
+            </div>
+        </div>
+
+        <!-- Cuenta -->
+        <div class="d-flex align-items-center gap-2 ms-auto">
+            @if (_isLogged)
+            {
+                <span class="ts-user small text-truncate">
+                    <i class="bi bi-person-circle me-1"></i> @_nombre <span class="text-muted">(@_rol)</span>
+                </span>
+                <button class="btn btn-outline-secondary btn-sm rounded-pill px-3" @onclick="Logout">
+                    <i class="bi bi-box-arrow-right me-1"></i> Salir
+                </button>
+            }
+            else
+            {
+                <NavLink class="btn btn-primary btn-sm rounded-pill px-3" href="/login" Match="NavLinkMatch.All">
+                    <i class="bi bi-box-arrow-in-right me-1"></i> Ingresar
+                </NavLink>
+            }
+        </div>
+    </div>
+</nav>
+
+@code {
+    bool _isLogged;
+    string? _rol;
+    string? _nombre;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _isLogged = await Sesion.IsLoggedAsync();
+            if (_isLogged)
+            {
+                _rol = (await Sesion.GetRolAsync())?.Trim();
+                _nombre = await Sesion.GetNombreAsync();
+            }
+        }
+        catch
+        {
+            _isLogged = false;
+        }
+    }
+
+    void Logout()
+    {
+        Sesion.Logout();
+        _isLogged = false; _rol = null; _nombre = null;
+        Nav.NavigateTo("/login", true);
+    }
+}

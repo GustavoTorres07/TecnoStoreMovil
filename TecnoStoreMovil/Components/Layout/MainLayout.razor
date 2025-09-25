@@ -1,0 +1,26 @@
+﻿@namespace TecnoStoreMovil.Components.Layout
+@using TecnoStoreMovil.Services.Contrato
+@inherits LayoutComponentBase
+@inject ISesionService Sesion
+@inject NavigationManager Nav
+
+<div class="d-flex flex-column min-vh-100">
+
+    <!-- Navbar global -->
+    <NavMenu />
+
+    <!-- Contenido -->
+    <main class="flex-fill">
+        <div class="container ts-container py-3">
+            @Body
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-top small text-muted py-3 mt-auto">
+        <div class="container d-flex justify-content-between align-items-center">
+            <span>© TecnoStore @DateTime.Now.Year</span>
+            <span>MAUI Blazor • Bootstrap</span>
+        </div>
+    </footer>
+</div>

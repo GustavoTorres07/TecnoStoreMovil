@@ -1,0 +1,10 @@
+﻿@page "/admin/productos/editar/{Id:int}"
+@code { [Parameter] public int Id { get; set; } }
+
+<div class="container py-3">
+    <h3><i class="bi bi-pencil-square"></i> Editar Producto (@Id)</h3>
+    <div class="alert alert-secondary">
+        Formulario en construcción. (Cuando definamos PUT en API de productos)
+    </div>
+    <a class="btn btn-outline-secondary" href="/admin/productos">Volver</a>
+</div>
