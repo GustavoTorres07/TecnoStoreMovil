@@ -1,0 +1,340 @@
+﻿@page "/mi-perfil"
+@using System.ComponentModel.DataAnnotations
+@using TecnoStoreMovil.Services.Contrato
+@using TecnoStoreMovil.Shared.DTOs
+@inject IUsuariosClient Usuarios
+@inject ISesionService Sesion
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+
+<div class="container py-3">
+    <div class="d-flex align-items-center mb-3">
+        <h3 class="me-auto mb-0"><i class="bi bi-person-gear"></i> Mi perfil</h3>
+        <button class="btn btn-outline-secondary" @onclick="Cancelar">
+            <i class="bi bi-arrow-left"></i> Volver
+        </button>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(_toast))
+    {
+        <div class="alert alert-success">@_toast</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <div class="alert alert-danger">@_error</div>
+    }
+
+    @if (_loading)
+    {
+        <div class="alert alert-info"><i class="bi bi-hourglass-split"></i> Cargando...</div>
+    }
+    else if (!_isLogged)
+    {
+        <div class="alert alert-warning">Debés iniciar sesión para editar tu perfil.</div>
+    }
+    else if (_form is not null)
+    {
+        <EditForm Model="_form" OnValidSubmit="Guardar">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="row g-3">
+                <!-- Datos básicos -->
+                <div class="col-12 col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-header fw-semibold">
+                            <i class="bi bi-person"></i> Datos personales
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Nombre</label>
+                                <InputText class="form-control" @bind-Value="_form!.Nombre" />
+                                <ValidationMessage For="@(() => _form!.Nombre)" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Apellido</label>
+                                <InputText class="form-control" @bind-Value="_form!.Apellido" />
+                                <ValidationMessage For="@(() => _form!.Apellido)" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <InputText class="form-control" @bind-Value="_form!.Email" />
+                                <ValidationMessage For="@(() => _form!.Email)" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Teléfono</label>
+                                <InputText class="form-control" @bind-Value="_form!.Telefono" />
+                                <ValidationMessage For="@(() => _form!.Telefono)" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Contraseña</label>
+                                <InputText class="form-control" type="password" @bind-Value="_form!.Clave" />
+                                <div class="form-text">
+                                    Por ahora es obligatoria para guardar cambios.
+                                </div>
+                                <ValidationMessage For="@(() => _form!.Clave)" />
+                            </div>
+                            <div class="form-check mb-2">
+                                <InputCheckbox class="form-check-input" @bind-Value="_form!.Activo" />
+                                <label class="form-check-label">Cuenta activa</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dirección -->
+                <div class="col-12 col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-header fw-semibold d-flex align-items-center">
+                            <i class="bi bi-geo-alt me-2"></i> Dirección
+                            <div class="form-check ms-auto">
+                                <InputCheckbox id="cbDir" class="form-check-input" @bind-Value="_form!.TieneDireccion" />
+                                <label for="cbDir" class="form-check-label">Agregar / editar dirección</label>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            @if (_form!.TieneDireccion)
+                            {
+                                <div class="mb-3">
+                                    <label class="form-label">Calle</label>
+                                    <InputText class="form-control" @bind-Value="_form!.Calle" />
+                                    <ValidationMessage For="@(() => _form!.Calle)" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Número</label>
+                                    <InputText class="form-control" @bind-Value="_form!.Numero" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Ciudad</label>
+                                    <InputText class="form-control" @bind-Value="_form!.Ciudad" />
+                                    <ValidationMessage For="@(() => _form!.Ciudad)" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Provincia</label>
+                                    <InputText class="form-control" @bind-Value="_form!.Provincia" />
+                                    <ValidationMessage For="@(() => _form!.Provincia)" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Código Postal</label>
+                                    <InputText class="form-control" @bind-Value="_form!.CodigoPostal" />
+                                    <ValidationMessage For="@(() => _form!.CodigoPostal)" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">País</label>
+                                    <InputText class="form-control" @bind-Value="_form!.Pais" />
+                                    <ValidationMessage For="@(() => _form!.Pais)" />
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-muted">
+                                    Activá la casilla para agregar o editar tu dirección.
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-3">
+@*                 <button type="button" class="btn btn-outline-secondary" @onclick="Volver">
+                    <i class="bi bi-x-lg"></i> Cancelar
+                </button> *@
+                <button class="btn btn-outline-secondary" @onclick="Cancelar">
+    <i class="bi bi-arrow-left"></i> Cancelar
+</button>
+                <button type="submit" class="btn btn-primary" disabled="@_saving">
+                    <i class="bi bi-save"></i> Guardar cambios
+                </button>
+            </div>
+        </EditForm>
+    }
+</div>
+
+@code {
+    bool _loading;
+    bool _saving;
+    bool _isLogged;
+    string? _error;
+    string? _toast;
+    int _userId;
+
+    PerfilForm? _form;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _loading = true;
+        _error = _toast = null;
+
+        _userId = await Sesion.GetUserIdAsync() ?? 0;
+        _isLogged = _userId > 0;
+
+        if (_isLogged)
+        {
+            try
+            {
+                var u = await Usuarios.GetByIdAsync(_userId);
+                if (u is null)
+                {
+                    _error = "No se encontró el usuario.";
+                }
+                else
+                {
+                    _form = PerfilForm.From(u);
+                }
+            }
+            catch (Exception ex) { _error = ex.Message; }
+        }
+
+        _loading = false;
+    }
+
+    async Task Guardar()
+    {
+        if (_form is null) return;
+
+        _saving = true;
+        _error = _toast = null;
+
+        try
+        {
+            var dto = _form.ToSaveDto();
+            await Usuarios.UpdateAsync(_userId, dto);
+            _toast = "Datos actualizados correctamente.";
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    // void Volver() => Nav.NavigateTo("/productos", true);
+
+    async Task Cancelar()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("history.back");
+        }
+        catch
+        {
+            Nav.NavigateTo("/productos");
+        }
+    }
+
+
+    // ViewModel con validaciones de DataAnnotations
+    public class PerfilForm
+    {
+        [Required, StringLength(100)]
+        public string Nombre { get; set; } = "";
+
+        [Required, StringLength(100)]
+        public string Apellido { get; set; } = "";
+
+        [Required, EmailAddress, StringLength(150)]
+        public string Email { get; set; } = "";
+
+        [Phone, StringLength(30)]
+        public string? Telefono { get; set; }
+
+        [Required, StringLength(150, MinimumLength = 4, ErrorMessage = "La contraseña debe tener al menos 4 caracteres.")]
+        public string Clave { get; set; } = "";
+
+        public bool Activo { get; set; } = true;
+
+        // Dirección
+        public bool TieneDireccion { get; set; }
+        [RequiredIf(nameof(TieneDireccion), true, ErrorMessage = "La calle es obligatoria.")]
+        public string? Calle { get; set; }
+        public string? Numero { get; set; }
+        [RequiredIf(nameof(TieneDireccion), true, ErrorMessage = "La ciudad es obligatoria.")]
+        public string? Ciudad { get; set; }
+        [RequiredIf(nameof(TieneDireccion), true, ErrorMessage = "La provincia es obligatoria.")]
+        public string? Provincia { get; set; }
+        [RequiredIf(nameof(TieneDireccion), true, ErrorMessage = "El código postal es obligatorio.")]
+        public string? CodigoPostal { get; set; }
+        [RequiredIf(nameof(TieneDireccion), true, ErrorMessage = "El país es obligatorio.")]
+        public string? Pais { get; set; }
+
+        // Mapeos
+        public static PerfilForm From(UsuarioDto u) => new PerfilForm
+        {
+            Nombre = u.Nombre,
+            Apellido = u.Apellido,
+            Email = u.Email,
+            Telefono = u.Telefono,
+            Activo = u.Activo,
+            TieneDireccion = u.Direccion is not null,
+            Calle = u.Direccion?.Calle,
+            Numero = u.Direccion?.Numero,
+            Ciudad = u.Direccion?.Ciudad,
+            Provincia = u.Direccion?.Provincia,
+            CodigoPostal = u.Direccion?.CodigoPostal,
+            Pais = u.Direccion?.Pais
+        };
+
+        public UsuarioSaveDto ToSaveDto()
+        {
+            DireccionSaveDto? dir = null;
+            if (TieneDireccion)
+            {
+                dir = new DireccionSaveDto(
+                    Calle ?? "",
+                    Numero,
+                    Ciudad ?? "",
+                    Provincia ?? "",
+                    CodigoPostal ?? "",
+                    Pais ?? ""
+                );
+            }
+
+            // RolPrincipal: mantenemos el actual (cliente) para no romper tu flujo;
+            // si querés permitir que el usuario cambie rol, habría que traerlo.
+            return new UsuarioSaveDto(
+                Nombre,
+                Apellido,
+                Email,
+                Clave,             // requerida por tu API de Update
+                Telefono,
+                Activo,
+                dir,
+                RolPrincipal: "Cliente"
+            );
+        }
+    }
+
+    // Atributo de validación condicional simple
+    public class RequiredIfAttribute : ValidationAttribute
+    {
+        private readonly string _boolProperty;
+        private readonly bool _desired;
+
+        public RequiredIfAttribute(string boolProperty, bool desired)
+        {
+            _boolProperty = boolProperty;
+            _desired = desired;
+        }
+
+        protected override ValidationResult? IsValid(object? value, ValidationContext context)
+        {
+            var prop = context.ObjectType.GetProperty(_boolProperty);
+            if (prop is null) return ValidationResult.Success;
+
+            var flag = prop.GetValue(context.ObjectInstance) as bool?;
+            if (flag == _desired)
+            {
+                var str = value as string;
+                if (string.IsNullOrWhiteSpace(str))
+                    return new ValidationResult(ErrorMessage ?? "Campo requerido.");
+            }
+            return ValidationResult.Success;
+        }
+    }
+}
