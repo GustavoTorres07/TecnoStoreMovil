@@ -106,7 +106,3 @@ TecnoStore.sln
     └─ Program.cs                 (Configuración: EF, Swagger, CORS, autenticación)
 
 ---
-
-
-
-
