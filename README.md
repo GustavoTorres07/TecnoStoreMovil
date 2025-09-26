@@ -70,19 +70,31 @@ TecnoStore.sln
 
 │
 ├─ TecnoStoreMovil (Frontend - .NET MAUI Blazor Hybrid)
+
 │ ├─ Pages/ (Pantallas: Login, Productos, Carrito, MisPedidos, etc.)
+
 │ ├─ Components/ (Componentes UI: NavMenu, Footer, Cards)
+
 │ └─ Services/ (Clientes Http para consumir la API)
+
 │
 ├─ TecnoStoreMovil.Shared (DTOs y Modelos compartidos)
+
 │ └─ Models/ (Usuario, Rol, Direccion, Producto, Carrito, Pedido, etc.)
+
 │ └─ DTOs/ (UsuarioDto, ProductoDto, CarritoDto, PedidoDto, etc.)
+
 │
 └─ TecnoStoreMovil.Api (Backend - ASP.NET Core Web API)
+
 ├─ Controllers/ (Usuarios, Productos, Categorias, Carrito, Pedidos, etc.)
+
 ├─ Data/ (AppDbContext con EF Core)
+
 ├─ Services/ (Lógica de negocio e interfaces)
+
 └─ Program.cs (Configuración: EF, Swagger, CORS, autenticación)
+
 
 
 ---
