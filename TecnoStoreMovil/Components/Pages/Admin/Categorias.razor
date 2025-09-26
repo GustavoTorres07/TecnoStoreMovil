@@ -60,7 +60,6 @@
     }
 </div>
 
-<!-- Modal Crear/Editar -->
 @if (_showForm)
 {
     <div class="@ModalCss(true)" tabindex="-1" role="dialog" style="display:block;">
@@ -112,7 +111,6 @@
     <div class="modal-backdrop fade show"></div>
 }
 
-<!-- Modal Confirmar Eliminación -->
 @if (_confirmDelete is not null)
 {
     <div class="@ModalCss(true)" tabindex="-1" role="dialog" style="display:block;">
@@ -148,21 +146,18 @@
 }
 
 @code {
-    // Estado general
     List<CategoriaDto> _items = new();
     string? _q;
     bool _loading;
     string? _toast;
     string? _error;
 
-    // Modal Form (Create/Update)
     bool _showForm;
     bool _saving;
     int? _editId;
     CategoriaFormVm _vm = new();
     string? _formError;
 
-    // Modal Delete
     CategoriaDto? _confirmDelete;
     string? _deleteError;
 
@@ -194,7 +189,6 @@
     Task Buscar() => CargarAsync();
     Task Refrescar() { _q = null; return CargarAsync(); }
 
-    // --- Crear / Editar ---
     void Nueva()
     {
         _editId = null;
@@ -259,7 +253,6 @@
         _formError = null;
     }
 
-    // --- Eliminar ---
     void Eliminar(int id)
     {
         var c = _items.FirstOrDefault(x => x.Id == id);
@@ -295,10 +288,8 @@
         }
     }
 
-    // Helpers
     string ModalCss(bool show) => show ? "modal fade show" : "modal fade";
 
-    // VM del formulario
     class CategoriaFormVm
     {
         [Required, StringLength(100)]

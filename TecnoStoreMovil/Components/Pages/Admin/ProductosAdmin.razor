@@ -14,7 +14,6 @@
         </button>
     </div>
 
-    <!-- Filtros -->
     <div class="row g-2 mb-3">
         <div class="col-12 col-md-4">
             <select class="form-select" @onchange="OnCat">
@@ -95,7 +94,6 @@
     }
 </div>
 
-<!-- Modal Crear/Editar -->
 @if (_showForm)
 {
     <div class="@ModalCss(true)" tabindex="-1" role="dialog" style="display:block;">
@@ -174,7 +172,6 @@
     <div class="modal-backdrop fade show"></div>
 }
 
-<!-- Modal Detalle -->
 @if (_detail is not null)
 {
     <div class="@ModalCss(true)" tabindex="-1" role="dialog" style="display:block;">
@@ -244,7 +241,6 @@
 
 
 @code {
-    // Estado general
     List<CategoriaDto> _cats = new();
     List<ProductoDto> _items = new();
     int? _catId;
@@ -253,14 +249,12 @@
     string? _toast;
     string? _error;
 
-    // Form (Create/Update)
     bool _showForm;
     bool _saving;
     int? _editId;
     ProductoFormVm _vm = new();
     string? _formError;
 
-    // Detalle
     ProductoDto? _detail;
 
     protected override async Task OnInitializedAsync()
@@ -297,7 +291,6 @@
         await CargarAsync();
     }
 
-    // --- Detalle ---
     async Task Ver(int id)
     {
         _detail = await Catalogo.GetProductoAsync(id);
@@ -306,7 +299,6 @@
     void CerrarDetalle() => _detail = null;
 
 
-    // Eliminar
     ProductoDto? _confirmDelete;
     string? _deleteError;
 
@@ -336,7 +328,6 @@
                 return;
             }
 
-            // feedback y recarga
             _toast = "Producto eliminado.";
             _confirmDelete = null;
             await CargarAsync();   // usa tu método actual de recarga de lista
@@ -349,7 +340,6 @@
 
 
 
-    // --- Crear / Editar ---
     void Nuevo()
     {
         _editId = null;

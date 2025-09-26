@@ -9,7 +9,6 @@
 <div class="container py-3">
     <h3 class="mb-3"><i class="bi bi-bag"></i> Productos</h3>
 
-    <!-- Filtros -->
     <div class="row g-2 mb-3">
         <div class="col-12 col-md-4">
             <select class="form-select" @onchange="OnCat">
@@ -72,7 +71,6 @@
                             </div>
                         </div>
 
-                        <!-- Footer: (-) qty (+) + Agregar + Ver -->
                         <div class="card-footer d-flex align-items-center gap-2">
                             <button class="btn btn-sm btn-outline-secondary"
                                     @onclick="() => Decrementar(p.Id)">
@@ -104,7 +102,6 @@
     }
 </div>
 
-<!-- Modal Detalle -->
 @if (_detail is not null)
 {
     <div class="@ModalCss(true)" tabindex="-1" role="dialog" style="display:block;">
@@ -136,7 +133,6 @@
     </div>
     <div class="modal-backdrop fade show"></div>
 }
-<!-- Botón flotante Carrito -->
 <a class="btn btn-primary rounded-circle shadow"
    style="position:fixed;right:18px;bottom:18px;width:56px;height:56px;display:flex;align-items:center;justify-content:center;z-index:1050"
    href="/carrito" title="Ir al carrito">
@@ -152,10 +148,8 @@
     string? _toast;
     string? _error;
 
-    // cantidades por producto
     Dictionary<int, int> _cant = new();
 
-    // detalle
     ProductoDto? _detail;
 
     protected override async Task OnInitializedAsync()
@@ -188,11 +182,9 @@
         await CargarAsync();
     }
 
-    // detalle
     async Task Ver(int id) { _detail = await Catalogo.GetProductoAsync(id); StateHasChanged(); }
     void CerrarDetalle() => _detail = null;
 
-    // cantidad +/- con tope de stock
     int GetCantidad(int id) => _cant.TryGetValue(id, out var q) ? q : 1;
     void Incrementar(int id, int stock)
     {

@@ -121,7 +121,6 @@
     }
 </div>
 
-<!-- Modal de confirmación (reusable) -->
 <ConfirmationModal
     IsOpen="@(_confirmDelete is not null)"
     Title="Eliminar usuario"
@@ -156,7 +155,6 @@
 
             var data = await UsuariosClient.SearchAsync(_q);
 
-            // Excluir al usuario logueado
             if (_currentUserId.HasValue)
                 data = data.Where(x => x.Id != _currentUserId.Value).ToList();
 

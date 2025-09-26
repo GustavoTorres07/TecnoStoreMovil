@@ -153,7 +153,6 @@
 
     private void Volver() => Nav.NavigateTo("/admin/usuarios");
 
-    // VM con validaciones básicas
     private class UsuarioFormVm
     {
         [Required, StringLength(100)]
@@ -176,7 +175,6 @@
         [Required]
         public string? RolPrincipal { get; set; } = "Cliente";
 
-        // Dirección (opcional)
         public string? Calle { get; set; }
         public string? Numero { get; set; }
         public string? Ciudad { get; set; }

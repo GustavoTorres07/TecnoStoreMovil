@@ -7,7 +7,6 @@
     <div class="d-flex align-items-center mb-3">
         <h3 class="me-auto mb-0"><i class="bi bi-receipt-cutoff"></i> Administración · Pedidos</h3>
 
-        <!-- Filtro de estado (idéntico patrón de filtros al de Productos) -->
         <div class="d-flex align-items-center gap-2">
             <select class="form-select" style="min-width:220px" @bind="EstadoFiltro">
                 <option value="">Todos</option>
@@ -40,7 +39,6 @@
     }
     else
     {
-        <!-- Grid de cards (igual esquema que Productos) -->
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
             @foreach (var p in _items)
             {
@@ -59,7 +57,6 @@
                             </div>
                         </div>
 
-                        <!-- Footer: Ver + (Aceptar / Rechazar) con mismo estilo que Productos -->
                         <div class="card-footer d-flex align-items-center gap-2">
                             <button class="btn btn-sm btn-outline-secondary"
                                     @onclick="() => Ver(p.Id)">
@@ -88,7 +85,6 @@
     }
 </div>
 
-<!-- Modal Detalle (igual patrón visual de tus modales) -->
 @if (_detail is not null)
 {
     <div class="modal fade show" tabindex="-1" style="display:block;">
@@ -161,12 +157,11 @@
     List<PedidoResumenDto> _items = new();
     PedidoDto? _detail;
 
-    string? _estado; // filtro actual
+    string? _estado; 
     bool _loading;
     string? _toast;
     string? _error;
 
-    // Para @bind del <select>: "" => null
     string EstadoFiltro
     {
         get => _estado ?? string.Empty;

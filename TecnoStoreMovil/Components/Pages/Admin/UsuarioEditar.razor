@@ -134,13 +134,12 @@
             var u = await UsuariosClient.GetByIdAsync(Id);
             if (u is null) { _error = "Usuario no encontrado."; return; }
 
-            // map a VM
             _vm = new UsuarioFormVm
             {
                 Nombre = u.Nombre,
                 Apellido = u.Apellido,
                 Email = u.Email,
-                Clave = "", // por seguridad no mostramos la clave actual; obligamos a reingresarla
+                Clave = "", 
                 Telefono = u.Telefono,
                 Activo = u.Activo,
                 RolPrincipal = u.Roles?.FirstOrDefault() ?? "Cliente",
@@ -207,7 +206,6 @@
 
     private void Volver() => Nav.NavigateTo("/admin/usuarios");
 
-    // VM con validaciones
     private class UsuarioFormVm
     {
         [Required, StringLength(100)]
@@ -230,7 +228,6 @@
         [Required]
         public string? RolPrincipal { get; set; } = "Cliente";
 
-        // Dirección (opcional)
         public string? Calle { get; set; }
         public string? Numero { get; set; }
         public string? Ciudad { get; set; }

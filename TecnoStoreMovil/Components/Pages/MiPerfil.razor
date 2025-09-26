@@ -83,7 +83,6 @@
                     </div>
                 </div>
 
-                <!-- Dirección -->
                 <div class="col-12 col-lg-6">
                     <div class="card h-100">
                         <div class="card-header fw-semibold d-flex align-items-center">
@@ -229,7 +228,6 @@
     }
 
 
-    // ViewModel con validaciones de DataAnnotations
     public class PerfilForm
     {
         [Required, StringLength(100)]
@@ -263,7 +261,6 @@
         [RequiredIf(nameof(TieneDireccion), true, ErrorMessage = "El país es obligatorio.")]
         public string? Pais { get; set; }
 
-        // Mapeos
         public static PerfilForm From(UsuarioDto u) => new PerfilForm
         {
             Nombre = u.Nombre,
@@ -295,13 +292,11 @@
                 );
             }
 
-            // RolPrincipal: mantenemos el actual (cliente) para no romper tu flujo;
-            // si querés permitir que el usuario cambie rol, habría que traerlo.
             return new UsuarioSaveDto(
                 Nombre,
                 Apellido,
                 Email,
-                Clave,             // requerida por tu API de Update
+                Clave,             
                 Telefono,
                 Activo,
                 dir,
@@ -310,7 +305,6 @@
         }
     }
 
-    // Atributo de validación condicional simple
     public class RequiredIfAttribute : ValidationAttribute
     {
         private readonly string _boolProperty;

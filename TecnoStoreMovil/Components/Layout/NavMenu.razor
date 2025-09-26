@@ -5,14 +5,11 @@
 <nav class="navbar ts-navbar">
     <div class="container-fluid flex-wrap gap-2">
 
-        <!-- Brand + tu SVG -->
         <NavLink class="navbar-brand d-flex align-items-center gap-2 me-auto" href="/productos" Match="NavLinkMatch.All">
-            <!-- Cargá tu SVG en wwwroot/images/tecnostore.svg -->
             <img class="ts-logo-img" src="img/logo.svg" alt="TecnoStore" />
             <span class="fw-semibold">TecnoStore</span>
         </NavLink>
 
-        <!-- Menú principal (scroll horizontal en xs/sm, grid en md+) -->
         <div class="ts-navwrap">
             <div class="ts-navrail">
                 <NavLink class="ts-link" href="/productos" Match="NavLinkMatch.Prefix">
@@ -56,7 +53,6 @@
             </div>
         </div>
 
-        <!-- Cuenta -->
         <div class="d-flex align-items-center gap-2 ms-auto">
             @if (_isLogged)
             {

@@ -47,11 +47,9 @@
 @code {
     [Parameter] public required ProductoDto Producto { get; set; }
 
-    // Acción principal (cliente: "Agregar"; admin: "Editar" si querés reutilizar)
     [Parameter] public string PrimaryText { get; set; } = "Agregar";
     [Parameter] public Action<int>? OnPrimaryAction { get; set; }
 
-    // Acciones secundarias para Admin
     [Parameter] public Action<int>? OnEdit { get; set; }
     [Parameter] public Action<int>? OnDelete { get; set; }
 }
