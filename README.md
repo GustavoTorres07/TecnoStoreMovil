@@ -50,11 +50,13 @@ El proyecto está dividido en **tres capas principales**:
 ## 👥 Roles de usuario
 
 ### 👤 Cliente
-- Registrarse / iniciar sesión.
+- iniciar sesión.
 - Explorar productos y categorías.
 - Agregar productos al carrito.
 - Confirmar pedidos.
 - Consultar su historial de pedidos con filtros por estado.
+- Editar sus Datos Personales.
+- Entre otras funciones.
 
 ### 🛠️ Administrador
 - Gestionar usuarios y roles.
@@ -64,37 +66,25 @@ El proyecto está dividido en **tres capas principales**:
 
 ---
 
-## 🗂️ Estructura del proyecto
+## 📂 Estructura del proyecto
 
+```plaintext
 TecnoStore.sln
-
 │
-├─ TecnoStoreMovil (Frontend - .NET MAUI Blazor Hybrid)
-
-│ ├─ Pages/ (Pantallas: Login, Productos, Carrito, MisPedidos, etc.)
-
-│ ├─ Components/ (Componentes UI: NavMenu, Footer, Cards)
-
-│ └─ Services/ (Clientes Http para consumir la API)
-
+├─ TecnoStoreMovil/               (Frontend - .NET MAUI Blazor Hybrid)
+│   ├─ Pages/                     (Pantallas: Login, Productos, Carrito, MisPedidos, Perfil, etc.)
+│   ├─ Components/                (UI: NavMenu, Footer, Cards, Layouts, etc.)
+│   └─ Services/                  (Clientes Http para consumir la API: Auth, Carrito, Pedido, etc.)
 │
-├─ TecnoStoreMovil.Shared (DTOs y Modelos compartidos)
-
-│ └─ Models/ (Usuario, Rol, Direccion, Producto, Carrito, Pedido, etc.)
-
-│ └─ DTOs/ (UsuarioDto, ProductoDto, CarritoDto, PedidoDto, etc.)
-
+├─ TecnoStoreMovil.Shared/        (DTOs y Modelos compartidos)
+│   ├─ Models/                    (Usuario, Rol, Dirección, Producto, Carrito, Pedido, etc.)
+│   └─ DTOs/                      (UsuarioDto, ProductoDto, CarritoDto, PedidoDto, etc.)
 │
-└─ TecnoStoreMovil.Api (Backend - ASP.NET Core Web API)
-
-├─ Controllers/ (Usuarios, Productos, Categorias, Carrito, Pedidos, etc.)
-
-├─ Data/ (AppDbContext con EF Core)
-
-├─ Services/ (Lógica de negocio e interfaces)
-
-└─ Program.cs (Configuración: EF, Swagger, CORS, autenticación)
-
+└─ TecnoStoreMovil.Api/           (Backend - ASP.NET Core Web API)
+    ├─ Controllers/               (Usuarios, Productos, Categorías, Carrito, Pedidos, etc.)
+    ├─ Data/                      (AppDbContext con EF Core)
+    ├─ Services/                  (Lógica de negocio e interfaces)
+    └─ Program.cs                 (Configuración: EF, Swagger, CORS, autenticación)
 
 
 ---
@@ -104,7 +94,6 @@ TecnoStore.sln
 - **Frontend:** .NET MAUI Blazor Hybrid + Bootstrap 5 + Blazor Components
 - **Backend:** ASP.NET Core 8 Web API + EF Core
 - **Base de datos:** SQL Server
-- **Autenticación:** JWT + sesiones en almacenamiento seguro
 - **Control de dependencias:** Inyección de dependencias (DI)
 - **Control de versiones:** GitHub
 
@@ -116,6 +105,3 @@ Proyecto desarrollado por:
 
 **Gustavo Torres**  
 Tecnicatura Superior en Desarrollo de Software (TSDS) – ITES 2025 
-
-
-
