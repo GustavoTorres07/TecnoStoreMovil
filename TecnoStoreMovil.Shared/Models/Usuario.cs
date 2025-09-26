@@ -16,5 +16,8 @@
         public ICollection<UsuarioRol> UsuarioRoles { get; set; } = new List<UsuarioRol>();
 
         public ICollection<Pedido> Pedidos { get; set; } = new List<Pedido>();
+
+        public ICollection<Carrito> Carritos { get; set; } = new List<Carrito>();
+
     }
 }

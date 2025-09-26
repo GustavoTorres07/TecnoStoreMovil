@@ -26,7 +26,7 @@ public class CategoriasController : ControllerBase
         return dto is null ? NotFound() : Ok(dto);
     }
 
-    [HttpPost]   // 👈 igual que en Usuarios
+    [HttpPost]   
     public async Task<ActionResult<int>> Create([FromBody] CategoriaSaveDto dto, CancellationToken ct)
     {
         try

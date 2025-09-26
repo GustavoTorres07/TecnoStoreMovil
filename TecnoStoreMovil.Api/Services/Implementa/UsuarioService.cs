@@ -4,7 +4,7 @@ using TecnoStoreMovil.Api.Services.Contrato;
 using TecnoStoreMovil.Shared.DTOs;
 using TecnoStoreMovil.Shared.Models;
 
-namespace TecnoStoreMovil.Api.Services.Implementacion;
+namespace TecnoStoreMovil.Api.Services.Implementa;
 
 public class UsuarioService : IUsuarioService
 {
@@ -83,11 +83,9 @@ public class UsuarioService : IUsuarioService
 
     public async Task<int> CreateAsync(UsuarioSaveDto dto, CancellationToken ct)
     {
-        // Email único
         var emailExists = await _db.Usuarios.AnyAsync(x => x.Email == dto.Email, ct);
         if (emailExists) throw new InvalidOperationException("El email ya está registrado.");
 
-        // Rol principal
         var rol = await _db.Roles.FirstOrDefaultAsync(r => r.Nombre == dto.RolPrincipal && r.Activo, ct);
         if (rol is null) throw new InvalidOperationException($"Rol '{dto.RolPrincipal}' no existe o está inactivo.");
 
@@ -96,16 +94,15 @@ public class UsuarioService : IUsuarioService
             Nombre = dto.Nombre,
             Apellido = dto.Apellido,
             Email = dto.Email,
-            Clave = dto.Clave, // texto plano (según decisión)
+            Clave = dto.Clave, 
             Telefono = dto.Telefono,
             Activo = dto.Activo,
             FechaAlta = DateTime.UtcNow
         };
 
         await _db.Usuarios.AddAsync(u, ct);
-        await _db.SaveChangesAsync(ct); // para obtener Id
+        await _db.SaveChangesAsync(ct); 
 
-        // Dirección (opcional)
         if (dto.Direccion is not null)
         {
             var d = dto.Direccion;
@@ -122,7 +119,6 @@ public class UsuarioService : IUsuarioService
             await _db.Direcciones.AddAsync(dir, ct);
         }
 
-        // Rol principal
         await _db.UsuarioRoles.AddAsync(new UsuarioRol
         {
             UsuarioId = u.Id,
@@ -138,31 +134,25 @@ public class UsuarioService : IUsuarioService
         var u = await _db.Usuarios.FirstOrDefaultAsync(x => x.Id == id, ct);
         if (u is null) throw new KeyNotFoundException("Usuario no encontrado.");
 
-        // Email único (si cambia)
         if (!string.Equals(u.Email, dto.Email, StringComparison.OrdinalIgnoreCase))
         {
             var emailExists = await _db.Usuarios.AnyAsync(x => x.Email == dto.Email && x.Id != id, ct);
             if (emailExists) throw new InvalidOperationException("El email ya está registrado por otro usuario.");
         }
 
-        // Rol principal
         var rol = await _db.Roles.FirstOrDefaultAsync(r => r.Nombre == dto.RolPrincipal && r.Activo, ct);
         if (rol is null) throw new InvalidOperationException($"Rol '{dto.RolPrincipal}' no existe o está inactivo.");
 
-        // Update usuario
         u.Nombre = dto.Nombre;
         u.Apellido = dto.Apellido;
         u.Email = dto.Email;
-        u.Clave = dto.Clave; // texto plano
+        u.Clave = dto.Clave; 
         u.Telefono = dto.Telefono;
         u.Activo = dto.Activo;
 
-        // Upsert Dirección (1:1)
         var dir = await _db.Direcciones.FirstOrDefaultAsync(d => d.UsuarioId == id, ct);
         if (dto.Direccion is null)
         {
-            // Si enviaron null y hay dirección → opcionalmente podrías eliminarla
-            // En esta implementación, la dejamos como está si no viene.
         }
         else
         {
@@ -191,7 +181,6 @@ public class UsuarioService : IUsuarioService
             }
         }
 
-        // Rol principal: reemplazar todos por el indicado (simple)
         var actuales = await _db.UsuarioRoles.Where(ur => ur.UsuarioId == id).ToListAsync(ct);
         _db.UsuarioRoles.RemoveRange(actuales);
         await _db.UsuarioRoles.AddAsync(new UsuarioRol { UsuarioId = id, RolId = rol.Id }, ct);
@@ -204,7 +193,7 @@ public class UsuarioService : IUsuarioService
         var u = await _db.Usuarios.FirstOrDefaultAsync(x => x.Id == id, ct);
         if (u is null) return;
 
-        _db.Usuarios.Remove(u); // ON DELETE CASCADE en direccion y usuario_rol (por FK del script)
+        _db.Usuarios.Remove(u); 
         await _db.SaveChangesAsync(ct);
     }
 }

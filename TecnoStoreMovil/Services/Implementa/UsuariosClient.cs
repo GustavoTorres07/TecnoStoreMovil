@@ -2,7 +2,7 @@
 using TecnoStoreMovil.Services.Contrato;
 using TecnoStoreMovil.Shared.DTOs;
 
-namespace TecnoStoreMovil.Services.Implementacion;
+namespace TecnoStoreMovil.Services.Implementa;
 
 public class UsuariosClient : IUsuariosClient
 {

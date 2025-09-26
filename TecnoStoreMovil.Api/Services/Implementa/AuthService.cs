@@ -2,7 +2,7 @@
 using TecnoStoreMovil.Api.Data;
 using TecnoStoreMovil.Api.Services.Contrato;
 
-namespace TecnoStoreMovil.Api.Services.Implementacion;
+namespace TecnoStoreMovil.Api.Services.Implementa;
 
 public class AuthService : IAuthService
 {

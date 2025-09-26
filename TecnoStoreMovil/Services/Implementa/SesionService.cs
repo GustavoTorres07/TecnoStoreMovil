@@ -1,7 +1,7 @@
 ﻿using Microsoft.Maui.Storage;
 using TecnoStoreMovil.Services.Contrato;
 
-namespace TecnoStoreMovil.Services.Implementacion
+namespace TecnoStoreMovil.Services.Implementa
 {
     public class SesionService : ISesionService
     {
@@ -9,19 +9,21 @@ namespace TecnoStoreMovil.Services.Implementacion
         private const string KUser = "user_id";
         private const string KRol = "rol";
         private const string KNombre = "nombre";
+        //private const string KApellido = "apellido";
 
-        public async Task SetAsync(string sessionId, int userId, string rol, string nombre)
+        public async Task SetAsync(string sessionId, int userId, string rol, string nombre/*, string apellido*/)
         {
-            // Guardado seguro (Keychain/Keystore en móvil)
             await SecureStorage.SetAsync(KSession, sessionId);
             await SecureStorage.SetAsync(KUser, userId.ToString());
             await SecureStorage.SetAsync(KRol, rol);
             await SecureStorage.SetAsync(KNombre, nombre);
+            //await SecureStorage.SetAsync(KApellido, apellido);
         }
 
         public Task<string?> GetSessionIdAsync() => SecureStorage.GetAsync(KSession);
         public Task<string?> GetRolAsync() => SecureStorage.GetAsync(KRol);
         public Task<string?> GetNombreAsync() => SecureStorage.GetAsync(KNombre);
+        //public Task<string?> GetApellidoAsync() => SecureStorage.GetAsync(KApellido);
 
         public async Task<int?> GetUserIdAsync()
         {
@@ -42,6 +44,7 @@ namespace TecnoStoreMovil.Services.Implementacion
             SecureStorage.Remove(KUser);
             SecureStorage.Remove(KRol);
             SecureStorage.Remove(KNombre);
+            //SecureStorage.Remove(KApellido);
         }
 
         public async Task<bool> IsLoggedAsync()

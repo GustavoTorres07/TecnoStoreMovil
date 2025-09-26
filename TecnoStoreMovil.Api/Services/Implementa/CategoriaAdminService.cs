@@ -5,7 +5,7 @@ using TecnoStoreMovil.Api.Services.Contrato;
 using TecnoStoreMovil.Shared.DTOs;
 using TecnoStoreMovil.Shared.Models;
 
-namespace TecnoStoreMovil.Api.Services.Implementacion;
+namespace TecnoStoreMovil.Api.Services.Implementa;
 
 public class CategoriaAdminService : ICategoriaAdminService
 {

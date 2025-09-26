@@ -1,7 +1,7 @@
 ﻿using System.Net.Http.Headers;
 using TecnoStoreMovil.Services.Contrato;
 
-namespace TecnoStoreMovil.Services.Implementacion;
+namespace TecnoStoreMovil.Services.Implementa;
 
 public class ApiClient : IApiClient
 {

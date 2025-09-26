@@ -4,7 +4,7 @@ using TecnoStoreMovil.Api.Services.Contrato;
 using TecnoStoreMovil.Shared.DTOs;
 using TecnoStoreMovil.Shared.Models;
 
-namespace TecnoStoreMovil.Api.Services.Implementacion;
+namespace TecnoStoreMovil.Api.Services.Implementa;
 
 public class ProductoAdminService : IProductoAdminService
 {
@@ -65,7 +65,6 @@ public class ProductoAdminService : IProductoAdminService
         var p = await _db.Productos.FirstOrDefaultAsync(x => x.Id == id, ct);
         if (p is null) return;
 
-        // Si el producto tiene pedido_item relacionados, la FK impedirá borrar.
         _db.Productos.Remove(p);
         await _db.SaveChangesAsync(ct);
     }

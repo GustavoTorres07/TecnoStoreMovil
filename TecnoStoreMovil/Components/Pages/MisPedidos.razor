@@ -1,5 +1,84 @@
 ﻿@page "/mis-pedidos"
+@using TecnoStoreMovil.Services.Contrato
+@using TecnoStoreMovil.Shared.DTOs
+@inject IPedidosClient Pedidos
+@inject ISesionService Sesion
 
 <div class="container py-3">
-    <h3>Mis pedidos</h3>
+    <div class="d-flex align-items-center mb-3">
+        <h3 class="me-auto mb-0"><i class="bi bi-receipt"></i> Mis Pedidos</h3>
+
+        <select class="form-select" style="max-width:220px" @onchange="OnEstado">
+            <option value="">Todos</option>
+            <option value="Pendiente" selected="@(_estado=="Pendiente")">Pendiente</option>
+            <option value="Aprobado"  selected="@(_estado=="Aprobado")">Aprobado</option>
+            <option value="Cancelado" selected="@(_estado=="Cancelado")">Cancelado</option>
+        </select>
+    </div>
+
+    @if (_loading)
+    {
+        <div class="alert alert-info">Cargando...</div>
+    }
+    else if (!_isLogged)
+    {
+        <div class="alert alert-warning">Debés iniciar sesión para ver tus pedidos.</div>
+    }
+    else if (_items.Count == 0)
+    {
+        <div class="alert alert-warning">No tenés pedidos.</div>
+    }
+    else
+    {
+        <div class="list-group">
+            @foreach (var p in _items)
+            {
+                <a class="list-group-item list-group-item-action" href="@($"/mis-pedidos/{p.Id}")">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">Pedido #@p.Id</h5>
+                        <small>@p.Fecha.ToString("g")</small>
+                    </div>
+                    <p class="mb-1">Estado: <span class="badge @EstadoCss(p.Estado)">@p.Estado</span></p>
+                    <small>Total: @p.Total.ToString("C")</small>
+                </a>
+            }
+        </div>
+    }
 </div>
+
+@code {
+    bool _loading;
+    bool _isLogged;
+    string? _estado;
+    int? _userId;
+    List<PedidoResumenDto> _items = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _loading = true;
+        _userId = await Sesion.GetUserIdAsync();
+        _isLogged = _userId is not null;
+        if (_isLogged) _items = await Pedidos.MisPedidosAsync(_userId!.Value, _estado);
+        _loading = false;
+    }
+
+    async Task OnEstado(ChangeEventArgs e)
+    {
+        _estado = string.IsNullOrWhiteSpace(e.Value?.ToString()) ? null : e.Value!.ToString();
+        if (_isLogged)
+        {
+            _loading = true;
+            _items = await Pedidos.MisPedidosAsync(_userId!.Value, _estado);
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    string EstadoCss(string estado) => estado switch
+    {
+        "Pendiente" => "bg-warning text-dark",
+        "Aprobado"  => "bg-success",
+        "Cancelado" => "bg-secondary",
+        _ => "bg-light text-dark"
+    };
+}

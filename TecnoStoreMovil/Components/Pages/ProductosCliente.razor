@@ -1,27 +1,46 @@
 ﻿@page "/productos"
 @using TecnoStoreMovil.Services.Contrato
 @using TecnoStoreMovil.Shared.DTOs
-@using TecnoStoreMovil.Components.Cards   
 @inject ICatalogoClient Catalogo
+@inject ICarritoClient CarritoClient
+@inject ISesionService Sesion
+
 
 <div class="container py-3">
     <h3 class="mb-3"><i class="bi bi-bag"></i> Productos</h3>
 
+    <!-- Filtros -->
     <div class="row g-2 mb-3">
         <div class="col-12 col-md-4">
             <select class="form-select" @onchange="OnCat">
                 <option value="">Todas las categorías</option>
                 @foreach (var c in _cats)
                 {
-                    <option value="@c.Id">@c.Nombre</option>
+                    <option value="@c.Id" selected="@(_catId == c.Id)">@c.Nombre</option>
                 }
             </select>
         </div>
-        <div class="col-12 col-md-8">
-            <input class="form-control" placeholder="Buscar por nombre o descripción..."
-                   @bind="_q" @bind:event="oninput" />
+        <div class="col-12 col-md-4">
+            <input class="form-control" placeholder="Buscar por nombre/desc..." @bind="_q" @bind:event="oninput" />
+        </div>
+        <div class="col-12 col-md-4 text-md-end">
+            <button class="btn btn-outline-secondary me-2" @onclick="Refrescar">
+                <i class="bi bi-arrow-repeat"></i> Refrescar
+            </button>
+            <button class="btn btn-outline-primary" @onclick="Buscar">
+                <i class="bi bi-search"></i> Buscar
+            </button>
         </div>
     </div>
+
+    @if (!string.IsNullOrWhiteSpace(_toast))
+    {
+        <div class="alert alert-success">@_toast</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <div class="alert alert-danger">@_error</div>
+    }
 
     @if (_loading)
     {
@@ -29,7 +48,7 @@
     }
     else if (_items.Count == 0)
     {
-        <div class="alert alert-warning">No se encontraron productos.</div>
+        <div class="alert alert-warning">No hay productos.</div>
     }
     else
     {
@@ -37,13 +56,92 @@
             @foreach (var p in _items)
             {
                 <div class="col">
-                    <ProductoCard Producto="p" PrimaryText="Agregar" OnPrimaryAction="AgregarAlCarrito" />
+                    <div class="card h-100 shadow-sm">
+                        <img class="card-img-top" src="@p.ImagenUrl" alt="@p.Nombre"
+                             style="object-fit:cover;height:180px;cursor:pointer"
+                             @onclick="() => Ver(p.Id)" />
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@p.Nombre</h5>
+                            <div class="small text-muted mb-2">@p.Categoria</div>
+                            <p class="card-text flex-grow-1">@p.Descripcion</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold">@p.Precio.ToString("C")</span>
+                                <span class="badge @(p.Stock > 0 ? "bg-success" : "bg-danger")">
+                                    Stock: @p.Stock
+                                </span>
+                            </div>
+                        </div>
 
+                        <!-- Footer: (-) qty (+) + Agregar + Ver -->
+                        <div class="card-footer d-flex align-items-center gap-2">
+                            <button class="btn btn-sm btn-outline-secondary"
+                                    @onclick="() => Decrementar(p.Id)">
+                                <i class="bi bi-dash"></i>
+                            </button>
+
+                            <span class="px-2">@GetCantidad(p.Id)</span>
+
+                            <button class="btn btn-sm btn-outline-secondary"
+                                    disabled="@(_cant.TryGetValue(p.Id, out var q) && q >= p.Stock)"
+                                    @onclick="() => Incrementar(p.Id, p.Stock)">
+                                <i class="bi bi-plus"></i>
+                            </button>
+
+                            <button class="btn btn-sm btn-outline-success ms-2"
+                                    disabled="@(p.Stock <= 0)"
+                                    @onclick="() => AgregarAlCarrito(p.Id, p.Stock)">
+                                <i class="bi bi-cart-plus"></i> Agregar
+                            </button>
+
+                            <button class="btn btn-sm btn-outline-secondary ms-auto" @onclick="() => Ver(p.Id)">
+                                <i class="bi bi-eye"></i> Ver más
+                            </button>
+                        </div>
+                    </div>
                 </div>
             }
         </div>
     }
 </div>
+
+<!-- Modal Detalle -->
+@if (_detail is not null)
+{
+    <div class="@ModalCss(true)" tabindex="-1" role="dialog" style="display:block;">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-eye"></i> Detalle de producto</h5>
+                    <button type="button" class="btn-close" @onclick="CerrarDetalle"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <img class="img-fluid rounded" src="@_detail.ImagenUrl" alt="@_detail.Nombre" />
+                        </div>
+                        <div class="col-md-7">
+                            <h4>@_detail.Nombre</h4>
+                            <div class="text-muted mb-2">@_detail.Categoria</div>
+                            <p>@_detail.Descripcion</p>
+                            <div class="mb-2"><strong>Precio:</strong> @_detail.Precio.ToString("C")</div>
+                            <div class="mb-2"><strong>Stock:</strong> @_detail.Stock</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary" @onclick="CerrarDetalle">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
+<!-- Botón flotante Carrito -->
+<a class="btn btn-primary rounded-circle shadow"
+   style="position:fixed;right:18px;bottom:18px;width:56px;height:56px;display:flex;align-items:center;justify-content:center;z-index:1050"
+   href="/carrito" title="Ir al carrito">
+    <i class="bi bi-cart"></i>
+</a>
 
 @code {
     List<CategoriaDto> _cats = new();
@@ -51,6 +149,14 @@
     int? _catId;
     string? _q;
     bool _loading;
+    string? _toast;
+    string? _error;
+
+    // cantidades por producto
+    Dictionary<int, int> _cant = new();
+
+    // detalle
+    ProductoDto? _detail;
 
     protected override async Task OnInitializedAsync()
     {
@@ -60,21 +166,57 @@
 
     async Task CargarAsync()
     {
-        _loading = true;
-        _items = await Catalogo.GetProductosAsync(_catId, _q);
-        _loading = false;
+        try
+        {
+            _loading = true;
+            _error = _toast = null;
+            var data = await Catalogo.GetProductosAsync(_catId, _q);
+            _items = data;
+
+            foreach (var p in _items)
+                if (!_cant.ContainsKey(p.Id)) _cant[p.Id] = p.Stock > 0 ? 1 : 0;
+        }
+        catch (Exception ex) { _error = $"Error al cargar: {ex.Message}"; }
+        finally { _loading = false; }
     }
 
+    Task Buscar() => CargarAsync();
+    Task Refrescar() { _q = null; _catId = null; return CargarAsync(); }
     async Task OnCat(ChangeEventArgs e)
     {
         _catId = int.TryParse(e.Value?.ToString(), out var v) ? v : null;
         await CargarAsync();
     }
 
-    void AgregarAlCarrito(int productId)
+    // detalle
+    async Task Ver(int id) { _detail = await Catalogo.GetProductoAsync(id); StateHasChanged(); }
+    void CerrarDetalle() => _detail = null;
+
+    // cantidad +/- con tope de stock
+    int GetCantidad(int id) => _cant.TryGetValue(id, out var q) ? q : 1;
+    void Incrementar(int id, int stock)
     {
-        // TODO: Integrar con tu CarritoStore/Service (no persistente)
-        // Por ahora, solo un mensaje de prueba:
-        Console.WriteLine($"Agregar producto {productId} al carrito");
+        var q = GetCantidad(id);
+        if (q < stock) _cant[id] = q + 1;
     }
+    void Decrementar(int id)
+    {
+        var q = GetCantidad(id);
+        if (q > 1) _cant[id] = q - 1;
+    }
+
+    async Task AgregarAlCarrito(int productoId, int stock)
+    {
+        var userId = await Sesion.GetUserIdAsync();
+        if (userId is null) { _error = "Debes iniciar sesión para agregar al carrito."; StateHasChanged(); return; }
+        var qty = GetCantidad(productoId);
+        if (qty <= 0) { _toast = "Cantidad inválida."; StateHasChanged(); return; }
+        if (qty > stock) { _toast = "No hay stock suficiente."; StateHasChanged(); return; }
+
+        var ok = await CarritoClient.AddItemAsync(productoId, qty);
+        _toast = ok ? "Producto agregado al carrito." : "No se pudo agregar al carrito.";
+        StateHasChanged();
+    }
+
+    string ModalCss(bool show) => show ? "modal fade show" : "modal fade";
 }

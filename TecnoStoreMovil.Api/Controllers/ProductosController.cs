@@ -17,24 +17,23 @@ public class ProductosController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ProductoDto>>> Get([FromQuery] int? categoriaId, [FromQuery] string? q, CancellationToken ct)
+    public async Task<ActionResult<IEnumerable<ProductoDto>>> Obtener([FromQuery] int? categoriaId, [FromQuery] string? q, CancellationToken ct)
         => Ok(await _read.SearchAsync(categoriaId, q, ct));
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<ProductoDto>> GetById(int id, CancellationToken ct)
+    public async Task<ActionResult<ProductoDto>> GetByIdAsync(int id, CancellationToken ct)
     {
         var dto = await _read.GetByIdAsync(id, ct);
         return dto is null ? NotFound() : Ok(dto);
     }
 
-    // ABM
     [HttpPost]
     public async Task<ActionResult<int>> Create([FromBody] ProductoSaveDto dto, CancellationToken ct)
     {
         try
         {
             var id = await _admin.CreateAsync(dto, ct);
-            return CreatedAtAction(nameof(GetById), new { id }, id);
+            return CreatedAtAction(nameof(GetByIdAsync), new { id }, id);
         }
         catch (InvalidOperationException ex) { return Conflict(ex.Message); }
     }

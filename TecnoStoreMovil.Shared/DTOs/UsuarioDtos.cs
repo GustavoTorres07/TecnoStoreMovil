@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace TecnoStoreMovil.Shared.DTOs
+﻿namespace TecnoStoreMovil.Shared.DTOs
 {
     public record UsuarioDto(
         int Id,
@@ -25,8 +19,8 @@ namespace TecnoStoreMovil.Shared.DTOs
         string Clave,
         string? Telefono,
         bool Activo,
-        DireccionSaveDto? Direccion, // null si no cargan domicilio aún
-        string RolPrincipal          // "Administrador" o "Cliente"
+        DireccionSaveDto? Direccion, 
+        string RolPrincipal          
     );
 
     public record DireccionDto(

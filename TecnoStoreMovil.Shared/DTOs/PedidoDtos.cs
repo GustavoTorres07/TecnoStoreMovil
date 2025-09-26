@@ -1,47 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace TecnoStoreMovil.Shared.DTOs
+﻿namespace TecnoStoreMovil.Shared.DTOs
 {
-    public record PedidoItemDto(
+   
+    public record PedidoResumenDto(
         int Id,
+        DateTime Fecha,
+        string Estado,
+        decimal Total,
+        string? Cliente = null, 
+        int? UsuarioId = null   
+    );
+
+    public record PedidoItemLineaDto(
         int ProductoId,
-        string ProductoNombre,
-        int Cantidad,
+        string Producto,
         decimal PrecioUnit,
+        int Cantidad,
         decimal Subtotal
     );
 
     public record PedidoDto(
         int Id,
-        int UsuarioId,
-        string UsuarioNombre,
-        DateTime FechaCreacion,
+        DateTime Fecha,
         string Estado,
         decimal Total,
-        IReadOnlyList<PedidoItemDto> Items
+        List<PedidoItemLineaDto> Items,
+        string? Cliente = null,
+        int? UsuarioId = null
     );
 
-    // Para listados/gestión admin
-    public record PedidoResumenDto(
-        int Id,
-        int UsuarioId,
-        DateTime FechaCreacion,
-        string Estado,
-        decimal Total
-    );
+    public record PedidoCrearDesdeCarritoRequest(int UsuarioId);
 
-    // Para crear un pedido desde el front (ej.: “Finalizar compra”)
-    public record PedidoCreateRequest(
-        int UsuarioId,
-        IReadOnlyList<PedidoCreateItem> Items
-    );
-
-    public record PedidoCreateItem(
-        int ProductoId,
-        int Cantidad
-    );
+    public record PedidoCambiarEstadoRequest(string Estado, string? Motivo);
 }

@@ -11,12 +11,10 @@ public class UsuariosController : ControllerBase
     private readonly IUsuarioService _svc;
     public UsuariosController(IUsuarioService svc) => _svc = svc;
 
-    // GET /usuarios?q=torres
     [HttpGet]
     public async Task<ActionResult<IEnumerable<UsuarioDto>>> Search([FromQuery] string? q, CancellationToken ct)
         => Ok(await _svc.SearchAsync(q, ct));
 
-    // GET /usuarios/5
     [HttpGet("{id:int}")]
     public async Task<ActionResult<UsuarioDto>> GetById(int id, CancellationToken ct)
     {
@@ -24,9 +22,8 @@ public class UsuariosController : ControllerBase
         return dto is null ? NotFound() : Ok(dto);
     }
 
-    // POST /usuarios
     [HttpPost]
-    public async Task<ActionResult<int>> Create([FromBody] UsuarioSaveDto dto, CancellationToken ct)
+    public async Task<ActionResult<int>> Crear([FromBody] UsuarioSaveDto dto, CancellationToken ct)
     {
         try
         {
@@ -36,9 +33,8 @@ public class UsuariosController : ControllerBase
         catch (InvalidOperationException ex) { return Conflict(ex.Message); }
     }
 
-    // PUT /usuarios/5
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> Update(int id, [FromBody] UsuarioSaveDto dto, CancellationToken ct)
+    public async Task<IActionResult> Actualizar(int id, [FromBody] UsuarioSaveDto dto, CancellationToken ct)
     {
         try
         {
@@ -49,9 +45,8 @@ public class UsuariosController : ControllerBase
         catch (InvalidOperationException ex) { return Conflict(ex.Message); }
     }
 
-    // DELETE /usuarios/5
     [HttpDelete("{id:int}")]
-    public async Task<IActionResult> Delete(int id, CancellationToken ct)
+    public async Task<IActionResult> Eliminar(int id, CancellationToken ct)
     {
         await _svc.DeleteAsync(id, ct);
         return NoContent();

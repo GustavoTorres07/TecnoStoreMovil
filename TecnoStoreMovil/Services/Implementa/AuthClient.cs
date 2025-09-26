@@ -2,7 +2,7 @@
 using TecnoStoreMovil.Services.Contrato;
 using TecnoStoreMovil.Shared.DTOs;
 
-namespace TecnoStoreMovil.Services.Implementacion;
+namespace TecnoStoreMovil.Services.Implementa;
 
 public class AuthClient : IAuthClient
 {
@@ -21,23 +21,21 @@ public class AuthClient : IAuthClient
         {
             var http = await _api.CreateAsync();
 
-            // Opcional: cancelar si tarda demasiado (sin romper interfaz)
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
 
             var r = await http.PostAsJsonAsync("auth/login", new LoginRequest(email, clave), cts.Token);
 
             if (!r.IsSuccessStatusCode)
-                return false; // 400/401/500 => false
+                return false; 
 
             var dto = await r.Content.ReadFromJsonAsync<LoginResponse>(cancellationToken: cts.Token);
             if (dto is null) return false;
 
-            await _sesion.SetAsync(dto.SessionId, dto.UsuarioId, dto.Rol, dto.Nombre);
+            await _sesion.SetAsync(dto.SessionId, dto.UsuarioId, dto.Rol, dto.Nombre/*, dto.Apellido*/);
             return true;
         }
         catch
         {
-            // Cualquier error de red/JSON/etc => false (no tiramos excepción a la UI)
             return false;
         }
     }

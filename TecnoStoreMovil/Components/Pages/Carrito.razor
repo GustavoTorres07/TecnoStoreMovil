@@ -1,5 +1,202 @@
 ﻿@page "/carrito"
+@using TecnoStoreMovil.Services.Contrato
+@using TecnoStoreMovil.Shared.DTOs
+@inject ICarritoClient CarritoClient
+@inject IPedidosClient PedidosClient
+@inject ISesionService Sesion
+@inject NavigationManager Nav
 
 <div class="container py-3">
-    <h3>Carrito</h3>
+    <div class="d-flex align-items-center mb-3">
+        <h3 class="me-auto mb-0"><i class="bi bi-cart3"></i> Mi Carrito</h3>
+        <a class="btn btn-outline-secondary" href="/productos">
+            <i class="bi bi-bag"></i> Seguir comprando
+        </a>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(_toast))
+    {
+        <div class="alert alert-success">@_toast</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <div class="alert alert-danger">@_error</div>
+    }
+
+    @if (_loading)
+    {
+        <div class="alert alert-info"><i class="bi bi-hourglass-split"></i> Cargando...</div>
+    }
+    else if (_cart is null || _cart.Items.Count == 0)
+    {
+        <div class="alert alert-warning">
+            Tu carrito está vacío. <a href="/productos">Ver productos</a>.
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+            <div class="col-12 col-lg-8">
+                <div class="list-group">
+                    @foreach (var it in _cart.Items)
+                    {
+                        <div class="list-group-item">
+                            <div class="d-flex align-items-center">
+                                <img src="@it.ImagenUrl" class="rounded me-3" style="width:72px;height:72px;object-fit:cover" />
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between">
+                                        <strong>@it.Producto</strong>
+                                        <span class="text-muted">@it.PrecioUnit.ToString("C")</span>
+                                    </div>
+                                    <div class="small text-muted">Subtotal: @it.Subtotal.ToString("C")</div>
+                                    <div class="mt-2 d-flex align-items-center gap-2">
+                                        <button class="btn btn-sm btn-outline-secondary" title="Quitar 1"
+                                                @onclick="() => Decrementar(it.ProductoId)">
+                                            <i class="bi bi-dash"></i>
+                                        </button>
+                                        <span>@GetCant(it.ProductoId)</span>
+                                        <button class="btn btn-sm btn-outline-secondary" title="Agregar 1"
+                                                disabled="@((it.StockDisponible > 0 && GetCant(it.ProductoId) >= it.StockDisponible))"
+                                                @onclick="() => Incrementar(it.ProductoId, it.StockDisponible)">
+                                            <i class="bi bi-plus"></i>
+                                        </button>
+
+                                        <button class="btn btn-sm btn-outline-danger ms-3" title="Eliminar del carrito"
+                                                @onclick="() => Eliminar(it.ProductoId)">
+                                            <i class="bi bi-trash"></i> Eliminar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="mt-3">
+                    <button class="btn btn-outline-danger" @onclick="Vaciar">
+                        <i class="bi bi-trash3"></i> Vaciar carrito
+                    </button>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-4">
+                <div class="card">
+                    <div class="card-header"><strong>Resumen</strong></div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <span>Total</span>
+                            <strong>@_cart.Total.ToString("C")</strong>
+                        </div>
+                        <hr />
+                        <button class="btn btn-primary w-100" @onclick="FinalizarCompra" disabled="@_checkouting">
+                            <i class="bi bi-bag-check"></i> Finalizar compra
+                        </button>
+                        <div class="form-text mt-2">
+                            * Se confirmará cuando un administrador acepte el pedido.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 </div>
+
+@code {
+    CarritoDto? _cart;
+    bool _loading;
+    bool _checkouting;
+    string? _toast;
+    string? _error;
+
+    // cache de cantidades (para controles + / -)
+    Dictionary<int, int> _cant = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarAsync();
+    }
+
+    async Task CargarAsync()
+    {
+        try
+        {
+            _loading = true; _error = _toast = null;
+            _cart = await CarritoClient.GetAsync();
+
+            _cant.Clear();
+            if (_cart is not null)
+                foreach (var it in _cart.Items)
+                    _cant[it.ProductoId] = it.Cantidad;
+        }
+        catch (Exception ex) { _error = ex.Message; }
+        finally { _loading = false; }
+    }
+
+    int GetCant(int productoId) => _cant.TryGetValue(productoId, out var q) ? q : 1;
+
+    async Task Incrementar(int productoId, int stock)
+    {
+        var q = GetCant(productoId);
+        var newQ = (stock > 0) ? Math.Min(q + 1, stock) : q + 1;
+        if (newQ == q) return;
+
+        if (await CarritoClient.UpdateQtyAsync(productoId, newQ))
+        {
+            _cant[productoId] = newQ;
+            await CargarAsync();
+        }
+    }
+
+    async Task Decrementar(int productoId)
+    {
+        var q = GetCant(productoId);
+        var newQ = Math.Max(1, q - 1);
+        if (newQ == q) return;
+
+        if (await CarritoClient.UpdateQtyAsync(productoId, newQ))
+        {
+            _cant[productoId] = newQ;
+            await CargarAsync();
+        }
+    }
+
+    async Task Eliminar(int productoId)
+    {
+        if (await CarritoClient.RemoveItemAsync(productoId))
+        {
+            _toast = "Producto eliminado del carrito.";
+            await CargarAsync();
+        }
+        else _error = "No se pudo eliminar.";
+    }
+
+    async Task Vaciar()
+    {
+        if (await CarritoClient.ClearAsync())
+        {
+            _toast = "Carrito vaciado.";
+            await CargarAsync();
+        }
+        else _error = "No se pudo vaciar el carrito.";
+    }
+
+    async Task FinalizarCompra()
+    {
+        try
+        {
+            _checkouting = true;
+            var userId = await Sesion.GetUserIdAsync();
+            if (userId is null) { _error = "Debes iniciar sesión."; return; }
+
+            var pedidoId = await PedidosClient.CrearDesdeCarritoAsync(userId.Value);
+            if (pedidoId is null) { _error = "No se pudo crear el pedido (carrito vacío o error)."; return; }
+
+            _toast = $"Pedido #{pedidoId} creado. Queda pendiente de aprobación.";
+            // Podés redirigir si querés:
+            // Nav.NavigateTo("/mis-pedidos", true);
+            await CargarAsync();
+        }
+        catch (Exception ex) { _error = ex.Message; }
+        finally { _checkouting = false; }
+    }
+}

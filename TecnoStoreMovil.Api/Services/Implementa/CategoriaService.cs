@@ -4,7 +4,7 @@ using TecnoStoreMovil.Api.Data;
 using TecnoStoreMovil.Api.Services.Contrato;
 using TecnoStoreMovil.Shared.DTOs;
 
-namespace TecnoStoreMovil.Api.Services.Implementacion;
+namespace TecnoStoreMovil.Api.Services.Implementa;
 
 public class CategoriaService : ICategoriaService
 {

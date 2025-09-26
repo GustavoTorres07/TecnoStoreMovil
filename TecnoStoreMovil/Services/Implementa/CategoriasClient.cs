@@ -1,9 +1,8 @@
-﻿// CategoriasClient.cs
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using TecnoStoreMovil.Services.Contrato;
 using TecnoStoreMovil.Shared.DTOs;
 
-namespace TecnoStoreMovil.Services.Implementacion;
+namespace TecnoStoreMovil.Services.Implementa;
 
 public class CategoriasClient : ICategoriasClient
 {

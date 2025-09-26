@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace TecnoStoreMovil.Shared.Models
+﻿namespace TecnoStoreMovil.Shared.Models
 {
     public class Producto
     {
@@ -18,5 +12,7 @@ namespace TecnoStoreMovil.Shared.Models
         public bool Activo { get; set; }
         public Categoria Categoria { get; set; } = null!;
         public ICollection<PedidoItem> PedidoItems { get; set; } = new List<PedidoItem>();
+        public ICollection<CarritoItem> CarritoItems { get; set; } = new List<CarritoItem>();
+
     }
 }

@@ -1,5 +1,4 @@
-﻿// ICategoriaAdminService.cs (ABM)
-using TecnoStoreMovil.Shared.DTOs;
+﻿using TecnoStoreMovil.Shared.DTOs;
 
 namespace TecnoStoreMovil.Api.Services.Contrato;
 

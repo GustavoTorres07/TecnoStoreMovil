@@ -20,7 +20,7 @@ public class AuthController : ControllerBase
         var (ok, userId, nombre, rol) = await _auth.LoginAsync(req.Email, req.Clave, ct);
         if (!ok) return Unauthorized("Credenciales inválidas o usuario inactivo.");
 
-        var sessionId = Guid.NewGuid().ToString("N"); // opaco, no persistido en esta fase
+        var sessionId = Guid.NewGuid().ToString("N"); 
         return Ok(new LoginResponse(sessionId, userId, rol, nombre));
     }
 }

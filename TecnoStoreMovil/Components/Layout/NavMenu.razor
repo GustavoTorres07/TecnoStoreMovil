@@ -59,7 +59,7 @@
             @if (_isLogged)
             {
                 <span class="ts-user small text-truncate">
-                    <i class="bi bi-person-circle me-1"></i> @_nombre <span class="text-muted">(@_rol)</span>
+                    <i class="bi bi-person-circle me-1"></i> @_nombre @* @_apellido *@ <span class="text-muted">(@_rol)</span>
                 </span>
                 <button class="btn btn-outline-secondary btn-sm rounded-pill px-3" @onclick="Logout">
                     <i class="bi bi-box-arrow-right me-1"></i> Salir
@@ -76,9 +76,11 @@
 </nav>
 
 @code {
+
     bool _isLogged;
     string? _rol;
     string? _nombre;
+    // string? _apellido;
 
     protected override async Task OnInitializedAsync()
     {
@@ -89,6 +91,7 @@
             {
                 _rol = (await Sesion.GetRolAsync())?.Trim();
                 _nombre = await Sesion.GetNombreAsync();
+                // _apellido = await Sesion.GetApellidoAsync();
             }
         }
         catch
@@ -100,7 +103,7 @@
     void Logout()
     {
         Sesion.Logout();
-        _isLogged = false; _rol = null; _nombre = null;
+        _isLogged = false; _rol = null; _nombre = null; /* _apellido = null; */
         Nav.NavigateTo("/login", true);
     }
 }

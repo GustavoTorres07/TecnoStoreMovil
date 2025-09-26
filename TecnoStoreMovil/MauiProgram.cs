@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using TecnoStoreMovil.Services.Contrato;
-using TecnoStoreMovil.Services.Implementacion;
+using TecnoStoreMovil.Services.Implementa;
 
 namespace TecnoStoreMovil
 {
@@ -16,13 +16,10 @@ namespace TecnoStoreMovil
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 });
 
-            // 🔹 Imprescindible para Blazor en MAUI
             builder.Services.AddMauiBlazorWebView();
 
-            // 🔹 HttpClient + servicios del front
             builder.Services.AddHttpClient("api", c =>
             {
-                // Usa tu URL pública de Somee (con / al final si tu API mapea raiz "/")
                 c.BaseAddress = new Uri(TecnoStoreMovil.Config.ApiConfig.BaseUrl);
             });
 
@@ -34,6 +31,11 @@ namespace TecnoStoreMovil
             builder.Services.AddTransient<IAdminCategoriasClient, AdminCategoriasClient>();
             builder.Services.AddTransient<IAdminProductosClient, AdminProductosClient>();
             builder.Services.AddTransient<ICategoriasClient, CategoriasClient>();
+            builder.Services.AddTransient<ICarritoClient, CarritoClient>();
+            builder.Services.AddTransient<IPedidosClient, PedidosClient>();
+            builder.Services.AddTransient<IAdminPedidosClient, AdminPedidosClient>();
+
+
 
 
 #if DEBUG

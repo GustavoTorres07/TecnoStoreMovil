@@ -1,0 +1,56 @@
+﻿@page "/mis-pedidos/{Id:int}"
+@using TecnoStoreMovil.Services.Contrato
+@using TecnoStoreMovil.Shared.DTOs
+@inject IPedidosClient Pedidos
+
+<h3 class="mb-3"><i class="bi bi-file-earmark-text"></i> Pedido #@Id</h3>
+
+@if (_loading)
+{
+    <div class="alert alert-info">Cargando...</div>
+}
+else if (_detail is null)
+{
+    <div class="alert alert-warning">No se encontró el pedido.</div>
+}
+else
+{
+    <div class="mb-2"><strong>Fecha:</strong> @_detail.Fecha.ToString("g")</div>
+    <div class="mb-3"><strong>Estado:</strong> @_detail.Estado</div>
+
+    <div class="table-responsive">
+        <table class="table table-sm table-striped">
+            <thead><tr><th>Producto</th><th class="text-end">Cant.</th><th class="text-end">P.Unit</th><th class="text-end">Subtotal</th></tr></thead>
+            <tbody>
+                @foreach (var it in _detail.Items)
+                {
+                    <tr>
+                        <td>@it.Producto</td>
+                        <td class="text-end">@it.Cantidad</td>
+                        <td class="text-end">@it.PrecioUnit.ToString("C")</td>
+                        <td class="text-end">@it.Subtotal.ToString("C")</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="3" class="text-end">Total</th>
+                    <th class="text-end">@_detail.Total.ToString("C")</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+    bool _loading;
+    PedidoDto? _detail;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _loading = true;
+        _detail = await Pedidos.GetDetalleAsync(Id);
+        _loading = false;
+    }
+}

@@ -1,5 +1,4 @@
-﻿// ICategoriaService.cs (solo lectura)
-using TecnoStoreMovil.Shared.DTOs;
+﻿using TecnoStoreMovil.Shared.DTOs;
 
 namespace TecnoStoreMovil.Api.Services.Contrato;
 

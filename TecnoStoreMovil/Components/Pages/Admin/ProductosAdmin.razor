@@ -1,0 +1,451 @@
+﻿@page "/admin/productos"
+@using System.ComponentModel.DataAnnotations
+@using TecnoStoreMovil.Services.Contrato
+@using TecnoStoreMovil.Shared.DTOs
+@inject ICatalogoClient Catalogo
+@inject IAdminProductosClient AdminProductos
+@inject NavigationManager Nav
+
+<div class="container py-3">
+    <div class="d-flex align-items-center mb-3">
+        <h3 class="me-auto mb-0"><i class="bi bi-box-seam"></i> Administración · Productos</h3>
+        <button class="btn btn-primary" @onclick="Nuevo">
+            <i class="bi bi-plus-circle"></i> Agregar
+        </button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="row g-2 mb-3">
+        <div class="col-12 col-md-4">
+            <select class="form-select" @onchange="OnCat">
+                <option value="">Todas las categorías</option>
+                @foreach (var c in _cats)
+                {
+                    <option value="@c.Id" selected="@(_catId == c.Id)">@c.Nombre</option>
+                }
+            </select>
+        </div>
+        <div class="col-12 col-md-4">
+            <input class="form-control" placeholder="Buscar por nombre/desc..." @bind="_q" @bind:event="oninput" />
+        </div>
+        <div class="col-12 col-md-4 text-md-end">
+            <button class="btn btn-outline-secondary me-2" @onclick="Refrescar">
+                <i class="bi bi-arrow-repeat"></i> Refrescar
+            </button>
+            <button class="btn btn-outline-primary" @onclick="Buscar">
+                <i class="bi bi-search"></i> Buscar
+            </button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(_toast))
+    {
+        <div class="alert alert-success">@_toast</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <div class="alert alert-danger">@_error</div>
+    }
+
+    @if (_loading)
+    {
+        <div class="alert alert-info">Cargando...</div>
+    }
+    else if (_items.Count == 0)
+    {
+        <div class="alert alert-warning">No hay productos.</div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+            @foreach (var p in _items)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <img class="card-img-top" src="@p.ImagenUrl" alt="@p.Nombre"
+                             style="object-fit:cover;height:180px;cursor:pointer"
+                             @onclick="() => Ver(p.Id)" />
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@p.Nombre</h5>
+                            <div class="small text-muted mb-2">@p.Categoria</div>
+                            <p class="card-text flex-grow-1">@p.Descripcion</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold">@p.Precio.ToString("C")</span>
+                                <span class="badge @(p.Activo ? "bg-success" : "bg-secondary")">
+                                    @(p.Activo ? "Activo" : "Inactivo")
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-footer d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-primary" @onclick="() => Editar(p.Id)">
+                                <i class="bi bi-pencil-square"></i> Editar
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" @onclick="() => Ver(p.Id)">
+                                <i class="bi bi-eye"></i> Ver más
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" title="Eliminar"
+                                 @onclick="() => Eliminar(p.Id)">
+                                    <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<!-- Modal Crear/Editar -->
+@if (_showForm)
+{
+    <div class="@ModalCss(true)" tabindex="-1" role="dialog" style="display:block;">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-box-seam"></i> @(_editId is null ? "Agregar Producto" : $"Editar Producto (ID: {_editId})")
+                    </h5>
+                    <button type="button" class="btn-close" aria-label="Close" @onclick="CerrarForm"></button>
+                </div>
+
+                <EditForm Model="_vm" OnValidSubmit="GuardarAsync">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    <div class="modal-body">
+                        @if (!string.IsNullOrWhiteSpace(_formError))
+                        {
+                            <div class="alert alert-danger">@_formError</div>
+                        }
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Nombre</label>
+                                <InputText class="form-control" @bind-Value="_vm.Nombre" />
+                                <ValidationMessage For="@(() => _vm.Nombre)" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Categoría</label>
+                                <InputSelect class="form-select" @bind-Value="_vm.CategoriaId">
+                                    <option value="">-- Seleccione --</option>
+                                    @foreach (var c in _cats)
+                                    {
+                                        <option value="@c.Id">@c.Nombre</option>
+                                    }
+                                </InputSelect>
+                                <ValidationMessage For="@(() => _vm.CategoriaId)" />
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">Descripción</label>
+                                <InputText class="form-control" @bind-Value="_vm.Descripcion" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Precio</label>
+                                <InputNumber class="form-control" @bind-Value="_vm.Precio" />
+                                <ValidationMessage For="@(() => _vm.Precio)" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Stock</label>
+                                <InputNumber class="form-control" @bind-Value="_vm.Stock" />
+                                <ValidationMessage For="@(() => _vm.Stock)" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Imagen URL</label>
+                                <InputText class="form-control" @bind-Value="_vm.ImagenUrl" />
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-check mt-2">
+                                    <InputCheckbox class="form-check-input" @bind-Value="_vm.Activo" />
+                                    <label class="form-check-label">Activo</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button class="btn btn-primary" disabled="@_saving">
+                            <i class="bi bi-save"></i> Guardar
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" @onclick="CerrarForm">Cancelar</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
+
+<!-- Modal Detalle -->
+@if (_detail is not null)
+{
+    <div class="@ModalCss(true)" tabindex="-1" role="dialog" style="display:block;">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-eye"></i> Detalle de producto</h5>
+                    <button type="button" class="btn-close" @onclick="CerrarDetalle"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <img class="img-fluid rounded" src="@_detail.ImagenUrl" alt="@_detail.Nombre" />
+                        </div>
+                        <div class="col-md-7">
+                            <h4>@_detail.Nombre</h4>
+                            <div class="text-muted mb-2">@_detail.Categoria</div>
+                            <p>@_detail.Descripcion</p>
+                            <div class="mb-2"><strong>Precio:</strong> @_detail.Precio.ToString("C")</div>
+                            <div class="mb-2"><strong>Stock:</strong> @_detail.Stock</div>
+                            <div class="mb-2"><strong>Estado:</strong> @( _detail.Activo ? "Activo" : "Inactivo")</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary" @onclick="CerrarDetalle">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
+
+@if (_confirmDelete is not null)
+{
+    <div class="modal fade show" tabindex="-1" role="dialog" style="display:block;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-danger">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger">
+                        <i class="bi bi-exclamation-octagon"></i> Eliminar Producto
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="CancelarEliminar"></button>
+                </div>
+                <div class="modal-body">
+                    ¿Seguro que deseas eliminar <strong>@_confirmDelete.Nombre</strong> (ID @_confirmDelete.Id)?
+                    <div class="small text-muted mt-2">
+                        * No podrás eliminar si existen pedidos que lo referencian.
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(_deleteError))
+                    {
+                        <div class="alert alert-danger mt-3">@_deleteError</div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-danger" @onclick="EliminarConfirmado">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </button>
+                    <button class="btn btn-outline-secondary" @onclick="CancelarEliminar">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
+
+
+
+@code {
+    // Estado general
+    List<CategoriaDto> _cats = new();
+    List<ProductoDto> _items = new();
+    int? _catId;
+    string? _q;
+    bool _loading;
+    string? _toast;
+    string? _error;
+
+    // Form (Create/Update)
+    bool _showForm;
+    bool _saving;
+    int? _editId;
+    ProductoFormVm _vm = new();
+    string? _formError;
+
+    // Detalle
+    ProductoDto? _detail;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _cats = await Catalogo.GetCategoriasAsync();
+        await CargarAsync();
+    }
+
+    async Task CargarAsync()
+    {
+        try
+        {
+            _loading = true;
+            _error = _toast = null;
+
+            var data = await Catalogo.GetProductosAsync(_catId, _q);
+            _items = data;
+        }
+        catch (Exception ex)
+        {
+            _error = $"Error al cargar: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    Task Buscar() => CargarAsync();
+    Task Refrescar() { _q = null; _catId = null; return CargarAsync(); }
+    async Task OnCat(ChangeEventArgs e)
+    {
+        _catId = int.TryParse(e.Value?.ToString(), out var v) ? v : null;
+        await CargarAsync();
+    }
+
+    // --- Detalle ---
+    async Task Ver(int id)
+    {
+        _detail = await Catalogo.GetProductoAsync(id);
+        StateHasChanged();
+    }
+    void CerrarDetalle() => _detail = null;
+
+
+    // Eliminar
+    ProductoDto? _confirmDelete;
+    string? _deleteError;
+
+    void Eliminar(int id)
+    {
+        var p = _items.FirstOrDefault(x => x.Id == id);
+        if (p is null) return;
+        _deleteError = null;
+        _confirmDelete = p;
+    }
+
+    void CancelarEliminar()
+    {
+        _confirmDelete = null;
+        _deleteError = null;
+    }
+
+    async Task EliminarConfirmado()
+    {
+        if (_confirmDelete is null) return;
+        try
+        {
+            var ok = await AdminProductos.DeleteAsync(_confirmDelete.Id);
+            if (!ok)
+            {
+                _deleteError = "No se pudo eliminar. ¿Está referenciado en pedidos?";
+                return;
+            }
+
+            // feedback y recarga
+            _toast = "Producto eliminado.";
+            _confirmDelete = null;
+            await CargarAsync();   // usa tu método actual de recarga de lista
+        }
+        catch (Exception ex)
+        {
+            _deleteError = ex.Message;
+        }
+    }
+
+
+
+    // --- Crear / Editar ---
+    void Nuevo()
+    {
+        _editId = null;
+        _formError = null;
+        _vm = new ProductoFormVm { Activo = true, Stock = 0, Precio = 0, CategoriaId = null };
+        _showForm = true;
+    }
+
+    void Editar(int id)
+    {
+        var p = _items.FirstOrDefault(x => x.Id == id);
+        if (p is null) return;
+
+        _editId = id;
+        _formError = null;
+        _vm = new ProductoFormVm
+        {
+            CategoriaId = p.CategoriaId,
+            Nombre = p.Nombre,
+            Descripcion = p.Descripcion,
+            Precio = p.Precio,
+            Stock = p.Stock,
+            ImagenUrl = p.ImagenUrl,
+            Activo = p.Activo
+        };
+        _showForm = true;
+    }
+
+    async Task GuardarAsync()
+    {
+        _formError = null;
+        _saving = true;
+
+        try
+        {
+            // Validación mínima de categoría
+            if (_vm.CategoriaId is null || _vm.CategoriaId <= 0)
+            {
+                _formError = "Debe seleccionar una categoría.";
+                return;
+            }
+
+            var dto = new ProductoSaveDto(
+                _vm.CategoriaId.Value,
+                _vm.Nombre!,
+                string.IsNullOrWhiteSpace(_vm.Descripcion) ? null : _vm.Descripcion,
+                _vm.Precio,
+                _vm.Stock,
+                string.IsNullOrWhiteSpace(_vm.ImagenUrl) ? null : _vm.ImagenUrl,
+                _vm.Activo
+            );
+
+            if (_editId is null)
+            {
+                var id = await AdminProductos.CreateAsync(dto);
+                if (id is null) { _formError = "No se pudo crear (409/500)."; return; }
+                _toast = "Producto creado correctamente.";
+            }
+            else
+            {
+                var ok = await AdminProductos.UpdateAsync(_editId.Value, dto);
+                if (!ok) { _formError = "No se pudo actualizar."; return; }
+                _toast = "Producto actualizado correctamente.";
+            }
+
+            _showForm = false;
+            await CargarAsync();
+        }
+        catch (Exception ex)
+        {
+            _formError = ex.Message;
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    void CerrarForm()
+    {
+        _showForm = false;
+        _formError = null;
+    }
+
+    // Helpers
+    string ModalCss(bool show) => show ? "modal fade show" : "modal fade";
+
+    // VM del formulario
+    class ProductoFormVm
+    {
+        [Required] public int? CategoriaId { get; set; }
+        [Required, StringLength(150)] public string? Nombre { get; set; }
+        [StringLength(500)] public string? Descripcion { get; set; }
+        [Range(0, 999999999)] public decimal Precio { get; set; }
+        [Range(0, int.MaxValue)] public int Stock { get; set; }
+        [StringLength(300)] public string? ImagenUrl { get; set; }
+        public bool Activo { get; set; } = true;
+    }
+}
