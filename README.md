@@ -67,8 +67,10 @@ El proyecto está dividido en **tres capas principales**:
 ## 🗂️ Estructura del proyecto
 
 TecnoStore.sln
+
 │
 ├─ TecnoStoreMovil (Frontend - .NET MAUI Blazor Hybrid)
+
 │ ├─ Pages/ (Pantallas: Login, Productos, Carrito, MisPedidos, etc.)
 │ ├─ Components/ (Componentes UI: NavMenu, Footer, Cards)
 │ └─ Services/ (Clientes Http para consumir la API)
