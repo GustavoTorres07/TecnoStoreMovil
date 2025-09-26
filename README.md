@@ -104,5 +104,3 @@ TecnoStore.sln
     ├─ Data/                      (AppDbContext con EF Core)
     ├─ Services/                  (Lógica de negocio e interfaces)
     └─ Program.cs                 (Configuración: EF, Swagger, CORS, autenticación)
-
----
