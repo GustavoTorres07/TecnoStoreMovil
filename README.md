@@ -68,6 +68,7 @@ El proyecto está dividido en **tres capas principales**:
 
 ## 📂 Estructura del proyecto
 
+```plaintext
 TecnoStore.sln
 │
 ├─ TecnoStoreMovil/               (Frontend - .NET MAUI Blazor Hybrid)
