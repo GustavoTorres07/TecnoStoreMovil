@@ -64,6 +64,25 @@ El proyecto está dividido en **tres capas principales**:
 - Revisar pedidos de clientes.
 - Aceptar o rechazar pedidos → cambiando su estado.
 
+  ## 🔧 Tecnologías utilizadas
+
+- **Frontend:** .NET MAUI Blazor Hybrid + Bootstrap 5 + Blazor Components
+- **Backend:** ASP.NET Core 8 Web API + EF Core
+- **Base de datos:** SQL Server
+- **Control de dependencias:** Inyección de dependencias (DI)
+- **Control de versiones:** GitHub
+
+---
+
+
+
+## 👨‍💻 Desarrollador
+
+Proyecto desarrollado por:
+
+**Gustavo Torres**  
+Tecnicatura Superior en Desarrollo de Software (TSDS) – ITES 2025 
+
 ---
 
 ## 📂 Estructura del proyecto
@@ -86,26 +105,8 @@ TecnoStore.sln
     ├─ Services/                  (Lógica de negocio e interfaces)
     └─ Program.cs                 (Configuración: EF, Swagger, CORS, autenticación)
 
-
-
-
----
-
-## 🔧 Tecnologías utilizadas
-
-- **Frontend:** .NET MAUI Blazor Hybrid + Bootstrap 5 + Blazor Components
-- **Backend:** ASP.NET Core 8 Web API + EF Core
-- **Base de datos:** SQL Server
-- **Control de dependencias:** Inyección de dependencias (DI)
-- **Control de versiones:** GitHub
-
 ---
 
 
 
-## 👨‍💻 Desarrollador
 
-Proyecto desarrollado por:
-
-**Gustavo Torres**  
-Tecnicatura Superior en Desarrollo de Software (TSDS) – ITES 2025 
